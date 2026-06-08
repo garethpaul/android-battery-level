@@ -1,5 +1,8 @@
 ## Android Battery Level Vision
 
+This document explains the current state and direction of the project.
+Project overview and developer docs: [`README.md`](README.md)
+
 Android Battery Level is a legacy Android app that displays battery health,
 charge source, current, temperature, voltage, and device model information.
 
