@@ -47,3 +47,6 @@ clear reason and explicit documentation.
 - UI rewrites that make the sample harder to inspect
 - Build migrations bundled with unrelated behavior changes
 - Verification gate removals without equivalent replacement checks
+
+This list is a roadmap guardrail, not a permanent rule.
+Strong user demand and strong technical rationale can change it.
