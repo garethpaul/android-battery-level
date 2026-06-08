@@ -36,6 +36,11 @@ Contribution rules:
 
 ## Security And Privacy
 
+Canonical security policy and reporting:
+
+- [`SECURITY.md`](SECURITY.md)
+
+
 Battery state is low-risk compared with account or location data, but device
 model and power information should still be treated as local diagnostic data.
 Do not add network reporting, analytics, or logging of device details without a
