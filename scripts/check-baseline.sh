@@ -22,12 +22,26 @@ for pattern in \
   "private boolean batteryReceiverRegistered;" \
   "private void registerBatteryReceiver()" \
   "private void unregisterBatteryReceiver()" \
-  "unregisterReceiver(myBatInfoReceiver);"; do
+  "unregisterReceiver(myBatInfoReceiver);" \
+  "private static Intent batteryStatusIntent(Context context)" \
+  "private int batteryLevelPercent(Intent batteryStatus)" \
+  "batteryStatus == null" \
+  "BatteryManager.EXTRA_SCALE"; do
   if ! grep -Fq "$pattern" "$MAIN_ACTIVITY"; then
     printf '%s\n' "Missing lifecycle guard pattern: $pattern" >&2
     exit 1
   fi
 done
+
+if grep -Fq "level > 31" "$MAIN_ACTIVITY"; then
+  printf '%s\n' "Battery icon threshold must not skip levels 30 and 31." >&2
+  exit 1
+fi
+
+if ! grep -Fq "level < 65" "$MAIN_ACTIVITY"; then
+  printf '%s\n' "Battery icon threshold must keep orange below 65 percent." >&2
+  exit 1
+fi
 
 if ! grep -Fq 'buildToolsVersion "24.0.3"' "$ROOT_DIR/app/build.gradle"; then
   printf '%s\n' "Android build-tools must stay pinned to 24.0.3 for 64-bit aapt." >&2

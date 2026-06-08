@@ -41,6 +41,10 @@ Additional scan context:
 ```bash
 git clone https://github.com/garethpaul/android-battery-level.git
 cd android-battery-level
+scripts/check-baseline.sh
+./gradlew lint --no-daemon
+./gradlew test --no-daemon
+./gradlew assembleDebug --no-daemon
 ```
 
 The setup commands above are derived from repository files. Legacy mobile, Python, or JavaScript samples may require older SDKs or package versions than a modern workstation uses by default.
@@ -51,13 +55,15 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 ## Testing and Verification
 
-- `./gradlew test` or Android Studio's test runner when the SDK is configured
+- `scripts/check-baseline.sh` - runs SDK-free battery receiver and resource baseline checks
+- `./gradlew lint --no-daemon`, `./gradlew test --no-daemon`, and `./gradlew assembleDebug --no-daemon` when the Android SDK is configured
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
 ## Configuration and Secrets
 
 - No required secret or credential file was identified in the repository scan. If you add integrations later, keep secrets out of git.
+- The legacy Android build is pinned to Android build-tools 24.0.3 for this baseline.
 
 ## Security and Privacy Notes
 

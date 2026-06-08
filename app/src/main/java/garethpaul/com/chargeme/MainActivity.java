@@ -47,12 +47,12 @@ public class MainActivity extends Activity{
     private void setup() {
         registerBatteryReceiver();
 
-        IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-        Intent batteryStatus = this.registerReceiver(null, ifilter);
+        Intent batteryStatus = batteryStatusIntent(this);
+        if (batteryStatus == null) {
+            return;
+        }
 
-        int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-
-        level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+        level = batteryLevelPercent(batteryStatus);
         // Health 2 is good
 
         int health = batteryStatus.getIntExtra(BatteryManager.EXTRA_HEALTH, -1);
@@ -97,9 +97,11 @@ public class MainActivity extends Activity{
 
         ImageView batteryImage = (ImageView) findViewById(R.id.battery);
 
-        if (level > 0 && level < 30){
+        if (level < 0) {
+            batteryImage.setImageResource(R.drawable.battery_icon);
+        } else if (level < 30){
             batteryImage.setImageResource(R.drawable.battery_red);
-        } else if (level > 31 && level < 65) {
+        } else if (level < 65) {
             batteryImage.setImageResource(R.drawable.battery_orange);
         } else {
             batteryImage.setImageResource(R.drawable.battery_green);
@@ -115,6 +117,20 @@ public class MainActivity extends Activity{
         modelText.setText(getDeviceName());
 
 
+    }
+
+    private static Intent batteryStatusIntent(Context context) {
+        return context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+    }
+
+    private int batteryLevelPercent(Intent batteryStatus) {
+        int rawLevel = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+        int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+        if (rawLevel < 0 || scale <= 0) {
+            return -1;
+        }
+
+        return Math.round((rawLevel * 100.0f) / scale);
     }
 
     private void registerBatteryReceiver() {
@@ -163,15 +179,20 @@ public class MainActivity extends Activity{
 
     public static String batteryTemperature(Context context)
     {
-        Intent intent = context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        Intent intent = batteryStatusIntent(context);
+        if (intent == null) {
+            return "Unknown";
+        }
         float  temp   = ((float) intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE,0)) / 10;
         return String.valueOf(temp) + " \u2103";
     }
 
     public int getVoltage()
     {
-        IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-        Intent b = this.registerReceiver(null, ifilter);
+        Intent b = batteryStatusIntent(this);
+        if (b == null) {
+            return -1;
+        }
         return b.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1);
     }
 

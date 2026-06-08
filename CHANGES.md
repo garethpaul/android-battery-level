@@ -11,3 +11,7 @@
   and menu resources, and documented the narrow legacy lint baseline.
 - Fixed battery current model matching to use `Locale.US` instead of the
   device default locale.
+- Added battery status intent guards and normalized displayed battery level
+  against Android's reported battery scale.
+- Tightened battery icon thresholds so 30 and 31 percent no longer fall through
+  to the green state.
