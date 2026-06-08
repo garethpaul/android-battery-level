@@ -20,8 +20,9 @@ package garethpaul.com.chargeme;
 */
 
 import java.io.File;
+import java.util.Locale;
+
 import android.os.Build;
-import android.util.Log;
 
 public class CurrentReader {
 
@@ -30,9 +31,10 @@ public class CurrentReader {
         File f = null;
 
         // htc desire hd / desire z / inspire?
-        if (Build.MODEL.toLowerCase().contains("desire hd") ||
-                Build.MODEL.toLowerCase().contains("desire z") ||
-                Build.MODEL.toLowerCase().contains("inspire")) {
+        String model = Build.MODEL.toLowerCase(Locale.US);
+        if (model.contains("desire hd") ||
+                model.contains("desire z") ||
+                model.contains("inspire")) {
 
             f = new File("/sys/class/power_supply/battery/batt_current");
             if (f.exists()) {

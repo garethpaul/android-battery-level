@@ -1,6 +1,22 @@
 <resources>
     <string name="app_name">ChargeMe</string>
-
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
+    <string name="state_label">State:</string>
+    <string name="state_placeholder">Discharging</string>
+    <string name="plugged_label">Plugged</string>
+    <string name="plugged_placeholder">On Battery</string>
+    <string name="level_label">Level</string>
+    <string name="level_placeholder">100%</string>
+    <string name="technology_label">Technology</string>
+    <string name="technology_placeholder">Li-ion</string>
+    <string name="temperature_label">Temperature</string>
+    <string name="temperature_placeholder">20</string>
+    <string name="voltage_label">Voltage</string>
+    <string name="voltage_placeholder">400v</string>
+    <string name="current_label">Current</string>
+    <string name="current_placeholder">100V</string>
+    <string name="model_label">Model</string>
+    <string name="model_placeholder">Nexus 1</string>
+    <string name="health_label">Health</string>
+    <string name="health_placeholder">Good</string>
+    <string name="battery_indicator_description">Battery level indicator</string>
 </resources>

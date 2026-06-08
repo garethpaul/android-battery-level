@@ -81,7 +81,7 @@ Fix the battery app's broadcast receiver lifecycle so activity transitions do no
 - **Patterns:** Short setup and verification sections with Android SDK prerequisites.
 - **Test Scenarios:**
   - README lists `scripts/check-baseline.sh`.
-  - README lists `./gradlew tasks --no-daemon` and `./gradlew assembleDebug --no-daemon`.
+  - README lists `./gradlew lint --no-daemon`, `./gradlew test --no-daemon`, and `./gradlew assembleDebug --no-daemon`.
   - README documents that Android SDK configuration is required for Gradle verification.
 - **Verification:** Manual README review
 
