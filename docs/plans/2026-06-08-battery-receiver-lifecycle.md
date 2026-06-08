@@ -34,6 +34,7 @@ Fix the battery app's broadcast receiver lifecycle so activity transitions do no
 
 - **Track receiver registration state:** A boolean guard avoids duplicate `registerReceiver` calls and makes unregistering idempotent.
 - **Keep sticky battery reads in `setup()`:** The existing UI code reads `ACTION_BATTERY_CHANGED` via `registerReceiver(null, filter)`, so the fix should not rewrite UI refresh logic.
+- **Use build-tools 24.0.3 with compile SDK 22:** The original build-tools 22.0.1 `aapt` binary is 32-bit and fails on this host while loading `libz.so.1`; build-tools 24.0.3 provides a 64-bit `aapt` while preserving the legacy Android Gradle Plugin.
 - **Use SDK-free source checks:** Shell checks can guard the lifecycle regression before Android SDK setup is available.
 - **Avoid toolchain migration in this pass:** Gradle, Android Gradle Plugin, SDK levels, and runtime permission behavior need a separate Android-capable pass.
 
@@ -70,6 +71,7 @@ Fix the battery app's broadcast receiver lifecycle so activity transitions do no
   - The script fails if `onPause()` or `onStop()` call `setup()`.
   - The script verifies registration and unregistration helpers exist.
   - The script verifies receiver registration state is tracked.
+  - The script verifies build-tools 24.0.3 is documented and pinned.
 - **Verification:** `scripts/check-baseline.sh`
 
 ### U3. Document Restore and Verification
@@ -87,7 +89,7 @@ Fix the battery app's broadcast receiver lifecycle so activity transitions do no
 
 ## Risks & Dependencies
 
-- Gradle verification requires `ANDROID_HOME` or `local.properties` pointing to a compatible Android SDK.
+- Gradle verification requires `ANDROID_HOME` or `local.properties` pointing to a compatible Android SDK with build-tools 24.0.3.
 - The app targets SDK 22; runtime permission and modern battery API behavior should be handled separately.
 - The current source has no unit-testable battery presenter or formatter layer, so deeper behavior coverage needs refactoring or instrumentation tests.
 
@@ -97,4 +99,4 @@ Fix the battery app's broadcast receiver lifecycle so activity transitions do no
 
 - `app/src/main/java/garethpaul/com/chargeme/MainActivity.java` calls `setup()` from create, resume, pause, and stop while `setup()` registers a receiver.
 - `app/src/main/java/garethpaul/com/chargeme/mBatInfoReceiver.java` defines the receiver being registered.
-- `./gradlew tasks --no-daemon` starts but fails with `SDK location not found` in this environment.
+- `app/build.gradle` originally used build-tools 22.0.1, whose 32-bit `aapt` fails on this host while loading `libz.so.1`.

@@ -10,6 +10,7 @@ This project currently uses the original Android build stack:
 - Gradle wrapper 2.2.1
 - Android Gradle Plugin 1.1.0
 - compile SDK 22 / target SDK 22
+- Android build-tools 24.0.3
 
 Configure an Android SDK path before running Gradle:
 

@@ -25,4 +25,14 @@ for pattern in \
   fi
 done
 
+if ! grep -Fq 'buildToolsVersion "24.0.3"' "$ROOT_DIR/app/build.gradle"; then
+  printf '%s\n' "Android build-tools must stay pinned to 24.0.3 for 64-bit aapt." >&2
+  exit 1
+fi
+
+if ! grep -Fq "Android build-tools 24.0.3" "$ROOT_DIR/README.md"; then
+  printf '%s\n' "README must document the pinned Android build-tools version." >&2
+  exit 1
+fi
+
 printf '%s\n' "Battery receiver lifecycle checks passed."
