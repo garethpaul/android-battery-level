@@ -1,5 +1,8 @@
 # Android Battery Level
 
+<!-- README-OVERVIEW-IMAGE -->
+![Project overview](docs/readme-overview.svg)
+
 Legacy Android app that displays battery health, charge source, current,
 temperature, voltage, and device model information.
 
