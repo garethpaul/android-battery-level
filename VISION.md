@@ -41,7 +41,7 @@ model and power information should still be treated as local diagnostic data.
 Do not add network reporting, analytics, or logging of device details without a
 clear reason and explicit documentation.
 
-## What We Will Not Merge For Now
+## What We Will Not Merge (For Now)
 
 - Analytics or telemetry built on battery/device information
 - UI rewrites that make the sample harder to inspect
