@@ -75,9 +75,3 @@ When the required SDK or runtime is unavailable, use static checks and source re
 ## Contributing
 
 Keep changes small and tied to the project that is already present in this repository. For code changes, document the toolchain used, avoid committing generated dependency directories or local configuration, and update this README when setup or verification steps change.
-
-## Existing Project Notes
-
-Prior README summary:
-
-> Android Battery Level Legacy Android app that displays battery health, charge source, current, temperature, voltage, and device model information. Toolchain This project currently uses the original Android build stack: - Gradle wrapper 2.2.1 - Android Gradle Plugin 1.1.0 - compile SDK 22 / target SDK 22 - Android build-tools 24.0.3 Configure an Android SDK path before running Gradle: ```sh
