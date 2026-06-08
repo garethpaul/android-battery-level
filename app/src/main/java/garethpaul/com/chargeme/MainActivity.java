@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 public class MainActivity extends Activity{
     private mBatInfoReceiver myBatInfoReceiver;
+    private boolean batteryReceiverRegistered;
     private int level;
 
     @Override
@@ -33,25 +34,19 @@ public class MainActivity extends Activity{
     @Override
     public void onPause() {
         super.onPause();
-        setup();
+        unregisterBatteryReceiver();
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        setup();
+        unregisterBatteryReceiver();
     }
 
 
     private void setup() {
+        registerBatteryReceiver();
 
-        myBatInfoReceiver = new mBatInfoReceiver();
-
-        this.registerReceiver(this.myBatInfoReceiver,
-                new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-
-
-        //
         IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         Intent batteryStatus = this.registerReceiver(null, ifilter);
 
@@ -120,6 +115,27 @@ public class MainActivity extends Activity{
         modelText.setText(getDeviceName());
 
 
+    }
+
+    private void registerBatteryReceiver() {
+        if (batteryReceiverRegistered) {
+            return;
+        }
+
+        myBatInfoReceiver = new mBatInfoReceiver();
+        this.registerReceiver(this.myBatInfoReceiver,
+                new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        batteryReceiverRegistered = true;
+    }
+
+    private void unregisterBatteryReceiver() {
+        if (!batteryReceiverRegistered) {
+            return;
+        }
+
+        unregisterReceiver(myBatInfoReceiver);
+        myBatInfoReceiver = null;
+        batteryReceiverRegistered = false;
     }
 
     public String getDeviceName() {
