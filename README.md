@@ -80,4 +80,4 @@ Keep changes small and tied to the project that is already present in this repos
 
 Prior README summary:
 
-> Android Battery Level <!-- README-OVERVIEW-IMAGE --> Legacy Android app that displays battery health, charge source, current, temperature, voltage, and device model information. Toolchain This project currently uses the original Android build stack: - Gradle wrapper 2.2.1 - Android Gradle Plugin 1.1.0 - compile SDK 22 / target SDK 22 - Android build-tools 24.0.3 Configure an Android SDK path before running Gradle: ```sh
+> Android Battery Level Legacy Android app that displays battery health, charge source, current, temperature, voltage, and device model information. Toolchain This project currently uses the original Android build stack: - Gradle wrapper 2.2.1 - Android Gradle Plugin 1.1.0 - compile SDK 22 / target SDK 22 - Android build-tools 24.0.3 Configure an Android SDK path before running Gradle: ```sh
