@@ -65,40 +65,23 @@ public class MainActivity extends Activity{
         }
 
         level = batteryLevelPercent(batteryStatus);
-        // Health 2 is good
+
+        TextView stateText = (TextView) findViewById(R.id.state);
+        stateText.setText(batteryStatusText(
+                batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1)));
 
         int health = batteryStatus.getIntExtra(BatteryManager.EXTRA_HEALTH, -1);
 
         TextView healthText = (TextView) findViewById(R.id.health);
-        if (health == 2){
-            healthText.setText("Good");
-        } else if (health == 7){
-            healthText.setText("Cold");
-        } else if (health == 4) {
-            healthText.setText("Dead");
-        } else if (health == 3) {
-            healthText.setText("Overheat");
-        } else {
-            healthText.setText("Unknown");
-        }
+        healthText.setText(batteryHealthText(health));
 
 
 
 
         int chargePlug = batteryStatus.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
-        boolean usbCharge = chargePlug == BatteryManager.BATTERY_PLUGGED_USB;
-        boolean acCharge = chargePlug == BatteryManager.BATTERY_PLUGGED_AC;
-
 
         TextView plugged = (TextView) findViewById(R.id.plugged);
-        if (acCharge == true) {
-            plugged.setText("AC Charging");
-        } else if (usbCharge == true){
-            plugged.setText("USB Charging");
-        } else {
-            plugged.setText("On Battery");
-
-        }
+        plugged.setText(batteryPluggedText(chargePlug));
 
         TextView current = (TextView) findViewById(R.id.current);
         current.setText(batteryCurrentText(CurrentReader.getValue()));
@@ -128,6 +111,8 @@ public class MainActivity extends Activity{
         TextView modelText = (TextView) findViewById(R.id.model);
         modelText.setText(getDeviceName());
 
+        TextView technologyText = (TextView) findViewById(R.id.tech);
+        technologyText.setText(batteryTechnologyText(batteryStatus));
 
     }
 
@@ -144,6 +129,58 @@ public class MainActivity extends Activity{
 
         int percent = Math.round((rawLevel * 100.0f) / scale);
         return Math.max(0, Math.min(100, percent));
+    }
+
+    private static String batteryStatusText(int status) {
+        switch (status) {
+            case BatteryManager.BATTERY_STATUS_CHARGING:
+                return "Charging";
+            case BatteryManager.BATTERY_STATUS_DISCHARGING:
+                return "Discharging";
+            case BatteryManager.BATTERY_STATUS_FULL:
+                return "Full";
+            case BatteryManager.BATTERY_STATUS_NOT_CHARGING:
+                return "Not Charging";
+            default:
+                return "Unknown";
+        }
+    }
+
+    private static String batteryHealthText(int health) {
+        switch (health) {
+            case BatteryManager.BATTERY_HEALTH_COLD:
+                return "Cold";
+            case BatteryManager.BATTERY_HEALTH_DEAD:
+                return "Dead";
+            case BatteryManager.BATTERY_HEALTH_GOOD:
+                return "Good";
+            case BatteryManager.BATTERY_HEALTH_OVERHEAT:
+                return "Overheat";
+            default:
+                return "Unknown";
+        }
+    }
+
+    private static String batteryPluggedText(int chargePlug) {
+        switch (chargePlug) {
+            case BatteryManager.BATTERY_PLUGGED_AC:
+                return "AC Charging";
+            case BatteryManager.BATTERY_PLUGGED_USB:
+                return "USB Charging";
+            case BatteryManager.BATTERY_PLUGGED_WIRELESS:
+                return "Wireless Charging";
+            default:
+                return "On Battery";
+        }
+    }
+
+    private static String batteryTechnologyText(Intent batteryStatus) {
+        String technology = batteryStatus.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY);
+        if (technology == null || technology.length() == 0) {
+            return "Unknown";
+        }
+
+        return technology;
     }
 
     private void registerBatteryReceiver() {

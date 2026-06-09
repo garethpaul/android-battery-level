@@ -121,6 +121,34 @@ for pattern in \
   fi
 done
 
+for pattern in \
+  "stateText.setText(batteryStatusText(" \
+  "BatteryManager.EXTRA_STATUS" \
+  "private static String batteryStatusText(int status)" \
+  "BatteryManager.BATTERY_STATUS_CHARGING" \
+  "BatteryManager.BATTERY_STATUS_DISCHARGING" \
+  "BatteryManager.BATTERY_STATUS_FULL" \
+  "BatteryManager.BATTERY_STATUS_NOT_CHARGING" \
+  "technologyText.setText(batteryTechnologyText(batteryStatus))" \
+  "private static String batteryTechnologyText(Intent batteryStatus)" \
+  "BatteryManager.EXTRA_TECHNOLOGY" \
+  "technology == null || technology.length() == 0"; do
+  if ! grep -Fq "$pattern" "$MAIN_ACTIVITY"; then
+    printf '%s\n' "Missing battery status/technology display contract: $pattern" >&2
+    exit 1
+  fi
+done
+
+for pattern in \
+  "private static String batteryHealthText(int health)" \
+  "private static String batteryPluggedText(int chargePlug)" \
+  "BatteryManager.BATTERY_PLUGGED_WIRELESS"; do
+  if ! grep -Fq "$pattern" "$MAIN_ACTIVITY"; then
+    printf '%s\n' "Missing battery display mapping contract: $pattern" >&2
+    exit 1
+  fi
+done
+
 if [ -f "$ROOT_DIR/app/src/main/res/menu/menu_main.xml" ]; then
   printf '%s\n' "Unused starter menu resource must not be restored." >&2
   exit 1
@@ -192,6 +220,16 @@ fi
 
 if ! grep -Fq "clamped to the 0 through 100 display range" "$README"; then
   printf '%s\n' "README must document battery percentage clamping." >&2
+  exit 1
+fi
+
+if ! grep -Fq "battery state and technology fields" "$README"; then
+  printf '%s\n' "README must document battery state and technology display handling." >&2
+  exit 1
+fi
+
+if ! grep -Fq "make check" "$ROOT_DIR/docs/plans/2026-06-09-battery-status-technology-display.md"; then
+  printf '%s\n' "Battery status and technology display plan must document make check verification." >&2
   exit 1
 fi
 

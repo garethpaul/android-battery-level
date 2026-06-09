@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Populated battery state and technology display fields from Android battery
+  broadcast extras and added SDK-free source contracts for the mappings.
 - Clamped normalized battery percentages to the 0 through 100 display range
   before icon threshold selection.
 - Guarded nullable action-bar access before applying the battery icon/title
