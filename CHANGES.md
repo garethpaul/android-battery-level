@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-09
+
+- Guarded nullable action-bar access before applying the battery icon/title
+  presentation and added an SDK-free source contract for the startup path.
+
 ## 2026-06-08
 
 - Added `make check` as the root wrapper for battery source, lint, test, and

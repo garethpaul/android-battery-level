@@ -70,6 +70,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - The legacy Android build is pinned to Android build-tools 24.0.3 for this baseline.
 - Battery voltage is read from Android in millivolts and displayed as volts
   with one decimal place.
+- The activity guards nullable action-bar access before applying the battery
+  icon and hidden-title presentation.
 
 ## Security and Privacy Notes
 
@@ -87,6 +89,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   verification wrapper baseline.
 - See `docs/plans/2026-06-09-battery-voltage-display-contracts.md` for the
   voltage display contract.
+- See `docs/plans/2026-06-09-battery-actionbar-guard.md` for the nullable
+  action-bar guard contract.
 
 ## Contributing
 

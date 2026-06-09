@@ -22,6 +22,8 @@ Priority:
 - Maintain an SDK-free baseline check for quick verification
 - Keep displayed battery values clear and traceable to Android system inputs
 - Keep displayed battery units converted before presentation
+- Keep legacy action-bar presentation optional so theme changes do not crash
+  startup
 
 Next priorities:
 

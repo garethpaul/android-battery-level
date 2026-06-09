@@ -1,5 +1,6 @@
 package garethpaul.com.chargeme;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -21,10 +22,19 @@ public class MainActivity extends Activity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getActionBar().setDisplayShowTitleEnabled(false);
-        getActionBar().setIcon(R.drawable.battery_icon);
+        configureActionBar();
         setContentView(R.layout.activity_main);
         setup();
+    }
+
+    private void configureActionBar() {
+        ActionBar actionBar = getActionBar();
+        if (actionBar == null) {
+            return;
+        }
+
+        actionBar.setDisplayShowTitleEnabled(false);
+        actionBar.setIcon(R.drawable.battery_icon);
     }
 
     @Override

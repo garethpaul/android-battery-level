@@ -19,6 +19,11 @@ if grep -A3 "public void onStop()" "$MAIN_ACTIVITY" | grep -Fq "setup();"; then
 fi
 
 for pattern in \
+  "private void configureActionBar()" \
+  "ActionBar actionBar = getActionBar();" \
+  "if (actionBar == null)" \
+  "actionBar.setDisplayShowTitleEnabled(false);" \
+  "actionBar.setIcon(R.drawable.battery_icon);" \
   "private boolean batteryReceiverRegistered;" \
   "private void registerBatteryReceiver()" \
   "private void unregisterBatteryReceiver()" \
@@ -32,6 +37,11 @@ for pattern in \
     exit 1
   fi
 done
+
+if grep -Fq "getActionBar().set" "$MAIN_ACTIVITY"; then
+  printf '%s\n' "ActionBar configuration must guard nullable getActionBar() results." >&2
+  exit 1
+fi
 
 if grep -Fq "level > 31" "$MAIN_ACTIVITY"; then
   printf '%s\n' "Battery icon threshold must not skip levels 30 and 31." >&2
