@@ -70,6 +70,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - The legacy Android build is pinned to Android build-tools 24.0.3 for this baseline.
 - Battery voltage is read from Android in millivolts and displayed as volts
   with one decimal place.
+- Battery current uses `Unknown` when the device has no supported current
+  sensor file.
 - The activity guards nullable action-bar access before applying the battery
   icon and hidden-title presentation.
 
@@ -91,6 +93,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   voltage display contract.
 - See `docs/plans/2026-06-09-battery-actionbar-guard.md` for the nullable
   action-bar guard contract.
+- See `docs/plans/2026-06-09-battery-current-display-contracts.md` for the
+  current display fallback.
 
 ## Contributing
 

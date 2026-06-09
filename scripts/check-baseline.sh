@@ -78,6 +78,11 @@ if grep -Fq 'String.valueOf(getVoltage()) + "V"' "$MAIN_ACTIVITY"; then
   exit 1
 fi
 
+if grep -Fq "String.valueOf(CurrentReader.getValue())" "$MAIN_ACTIVITY"; then
+  printf '%s\n' "Battery current must not render missing readings as null." >&2
+  exit 1
+fi
+
 for pattern in \
   "batteryVoltageText(getVoltage())" \
   "private static String batteryVoltageText(int millivolts)" \
@@ -85,6 +90,17 @@ for pattern in \
   "return \"Unknown\";"; do
   if ! grep -Fq "$pattern" "$MAIN_ACTIVITY"; then
     printf '%s\n' "Missing voltage display contract: $pattern" >&2
+    exit 1
+  fi
+done
+
+for pattern in \
+  "batteryCurrentText(CurrentReader.getValue())" \
+  "private static String batteryCurrentText(Long currentValue)" \
+  "if (currentValue == null)" \
+  "return String.valueOf(currentValue);"; do
+  if ! grep -Fq "$pattern" "$MAIN_ACTIVITY"; then
+    printf '%s\n' "Missing current display contract: $pattern" >&2
     exit 1
   fi
 done

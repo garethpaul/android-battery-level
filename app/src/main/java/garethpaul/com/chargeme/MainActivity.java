@@ -101,7 +101,7 @@ public class MainActivity extends Activity{
         }
 
         TextView current = (TextView) findViewById(R.id.current);
-        current.setText(String.valueOf(CurrentReader.getValue()));
+        current.setText(batteryCurrentText(CurrentReader.getValue()));
 
         // Battery Level
         TextView levelText = (TextView) findViewById(R.id.level);
@@ -214,6 +214,14 @@ public class MainActivity extends Activity{
         }
 
         return String.format(Locale.US, "%.1fV", millivolts / 1000.0f);
+    }
+
+    private static String batteryCurrentText(Long currentValue) {
+        if (currentValue == null) {
+            return "Unknown";
+        }
+
+        return String.valueOf(currentValue);
     }
 
 }
