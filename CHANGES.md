@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Guarded the battery receiver against missing broadcast intents and preserved
+  one-decimal temperature precision in receiver-backed reads.
 - Guarded sticky battery intent helpers when callers or broadcast intents are
   unavailable, preserving `Unknown` display fallbacks.
 - Added SDK-free baseline coverage for null-safe battery intent helpers.

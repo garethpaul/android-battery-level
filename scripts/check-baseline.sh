@@ -3,6 +3,7 @@ set -eu
 
 ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 MAIN_ACTIVITY="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/MainActivity.java"
+BAT_INFO_RECEIVER="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/mBatInfoReceiver.java"
 CURRENT_READER="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/CurrentReader.java"
 SMEM_TEXT_READER="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/SMemTextReader.java"
 BATT_ATTR_TEXT_READER="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/BattAttrTextReader.java"
@@ -335,6 +336,36 @@ fi
 
 if ! grep -Fq "Status: Completed" "$INTENT_NULL_PLAN" || ! grep -Fq "make check" "$INTENT_NULL_PLAN"; then
   printf '%s\n' "Battery intent null guard plan must record completed make check verification." >&2
+  exit 1
+fi
+
+if ! grep -Fq "if (intent == null)" "$BAT_INFO_RECEIVER"; then
+  printf '%s\n' "Battery info receiver must ignore missing broadcast intents." >&2
+  exit 1
+fi
+
+if grep -Fq "(float)(temp / 10)" "$BAT_INFO_RECEIVER"; then
+  printf '%s\n' "Battery info receiver must not truncate tenths before casting temperature." >&2
+  exit 1
+fi
+
+if ! grep -Fq "return temp / 10.0f;" "$BAT_INFO_RECEIVER"; then
+  printf '%s\n' "Battery info receiver must preserve one-decimal temperature values." >&2
+  exit 1
+fi
+
+if ! grep -Fq "intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, temp)" "$BAT_INFO_RECEIVER"; then
+  printf '%s\n' "Battery info receiver must preserve the previous temperature when the extra is missing." >&2
+  exit 1
+fi
+
+if ! grep -Fq "receiver temperature" "$README"; then
+  printf '%s\n' "README must document battery receiver temperature handling." >&2
+  exit 1
+fi
+
+if ! grep -Fq "make check" "$ROOT_DIR/docs/plans/2026-06-09-battery-receiver-temperature-guard.md"; then
+  printf '%s\n' "Battery receiver temperature guard plan must document make check verification." >&2
   exit 1
 fi
 

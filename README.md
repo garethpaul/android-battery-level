@@ -84,6 +84,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   missing fields.
 - Sticky battery intent helper paths tolerate missing contexts or broadcasts
   and keep display helpers on `Unknown` fallbacks instead of crashing.
+- Battery receiver temperature updates ignore missing broadcast intents and
+  preserve one-decimal Celsius values for receiver-backed reads.
 - The activity guards nullable action-bar access before applying the battery
   icon and hidden-title presentation.
 - The checked-in manifest keeps local battery diagnostic state out of Android
@@ -119,6 +121,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   policy contract.
 - See `docs/plans/2026-06-09-battery-intent-null-guards.md` for null-safe
   battery intent helper boundaries.
+- See `docs/plans/2026-06-09-battery-receiver-temperature-guard.md` for the
+  receiver temperature guard.
 
 ## Contributing
 

@@ -13,13 +13,16 @@ public class mBatInfoReceiver extends BroadcastReceiver {
     int temp = 0;
 
     float get_temp(){
-        return (float)(temp / 10);
+        return temp / 10.0f;
     }
 
     @Override
     public void onReceive(Context arg0, Intent intent) {
+        if (intent == null) {
+            return;
+        }
 
-        temp = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE,0);
+        temp = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, temp);
 
     }
 
