@@ -117,6 +117,10 @@ public class MainActivity extends Activity{
     }
 
     private static Intent batteryStatusIntent(Context context) {
+        if (context == null) {
+            return null;
+        }
+
         return context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
     }
 
@@ -175,6 +179,10 @@ public class MainActivity extends Activity{
     }
 
     private static String batteryTechnologyText(Intent batteryStatus) {
+        if (batteryStatus == null) {
+            return "Unknown";
+        }
+
         String technology = batteryStatus.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY);
         if (technology == null || technology.length() == 0) {
             return "Unknown";

@@ -22,6 +22,7 @@ Priority:
 - Maintain an SDK-free baseline check for quick verification
 - Keep displayed battery values clear and traceable to Android system inputs
 - Keep state and technology fields populated from battery broadcast extras
+- Keep sticky battery intent helper paths safe when broadcasts are unavailable
 - Keep normalized battery percentages clamped to the user-visible display range
 - Keep displayed battery units converted before presentation
 - Keep unavailable battery current readings clear instead of exposing raw null

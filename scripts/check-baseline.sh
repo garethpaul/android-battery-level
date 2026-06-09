@@ -15,6 +15,7 @@ RES_DIR="$ROOT_DIR/app/src/main/res"
 PERCENT_CLAMP_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-percent-clamp.md"
 BACKUP_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-backup-policy.md"
 CURRENT_PREFIX_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-current-prefix-parsing.md"
+INTENT_NULL_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-intent-null-guards.md"
 
 if grep -A3 "public void onPause()" "$MAIN_ACTIVITY" | grep -Fq "setup();"; then
   printf '%s\n' "onPause must unregister the battery receiver instead of calling setup()." >&2
@@ -45,6 +46,11 @@ for pattern in \
     exit 1
   fi
 done
+
+if ! grep -A5 "private static Intent batteryStatusIntent(Context context)" "$MAIN_ACTIVITY" | grep -Fq "if (context == null)"; then
+  printf '%s\n' "Battery status intent helper must tolerate missing contexts." >&2
+  exit 1
+fi
 
 if grep -Fq "getActionBar().set" "$MAIN_ACTIVITY"; then
   printf '%s\n' "ActionBar configuration must guard nullable getActionBar() results." >&2
@@ -218,6 +224,11 @@ for pattern in \
   fi
 done
 
+if ! grep -A6 "private static String batteryTechnologyText(Intent batteryStatus)" "$MAIN_ACTIVITY" | grep -Fq "if (batteryStatus == null)"; then
+  printf '%s\n' "Battery technology display helper must tolerate missing battery intents." >&2
+  exit 1
+fi
+
 for pattern in \
   "private static String batteryHealthText(int health)" \
   "private static String batteryPluggedText(int chargePlug)" \
@@ -307,6 +318,11 @@ if ! grep -Fq "battery state and technology fields" "$README"; then
   exit 1
 fi
 
+if ! grep -Fq "Sticky battery intent helper paths tolerate missing contexts" "$README"; then
+  printf '%s\n' "README must document null-safe battery intent helper handling." >&2
+  exit 1
+fi
+
 if ! grep -Fq "Current text-file readers require exact field prefixes" "$README"; then
   printf '%s\n' "README must document exact current field prefix parsing." >&2
   exit 1
@@ -314,6 +330,11 @@ fi
 
 if ! grep -Fq "make check" "$ROOT_DIR/docs/plans/2026-06-09-battery-status-technology-display.md"; then
   printf '%s\n' "Battery status and technology display plan must document make check verification." >&2
+  exit 1
+fi
+
+if ! grep -Fq "Status: Completed" "$INTENT_NULL_PLAN" || ! grep -Fq "make check" "$INTENT_NULL_PLAN"; then
+  printf '%s\n' "Battery intent null guard plan must record completed make check verification." >&2
   exit 1
 fi
 

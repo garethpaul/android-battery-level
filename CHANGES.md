@@ -2,6 +2,9 @@
 
 ## 2026-06-09
 
+- Guarded sticky battery intent helpers when callers or broadcast intents are
+  unavailable, preserving `Unknown` display fallbacks.
+- Added SDK-free baseline coverage for null-safe battery intent helpers.
 - Required exact field prefixes before parsing legacy battery current text files
   so unrelated keys cannot be mistaken for current readings.
 - Populated battery state and technology display fields from Android battery
