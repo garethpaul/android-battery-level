@@ -6,8 +6,12 @@ MAIN_ACTIVITY="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/MainActivity.
 CURRENT_READER="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/CurrentReader.java"
 LAYOUT="$ROOT_DIR/app/src/main/res/layout/activity_main.xml"
 README="$ROOT_DIR/README.md"
+VISION="$ROOT_DIR/VISION.md"
+SECURITY="$ROOT_DIR/SECURITY.md"
+CHANGES="$ROOT_DIR/CHANGES.md"
 RES_DIR="$ROOT_DIR/app/src/main/res"
 PERCENT_CLAMP_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-percent-clamp.md"
+BACKUP_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-backup-policy.md"
 
 if grep -A3 "public void onPause()" "$MAIN_ACTIVITY" | grep -Fq "setup();"; then
   printf '%s\n' "onPause must unregister the battery receiver instead of calling setup()." >&2
@@ -44,6 +48,16 @@ if grep -Fq "getActionBar().set" "$MAIN_ACTIVITY"; then
   exit 1
 fi
 
+if ! grep -Fq 'android:allowBackup="false"' "$ROOT_DIR/app/src/main/AndroidManifest.xml"; then
+  printf '%s\n' "Battery app must disable Android backups for local diagnostic state." >&2
+  exit 1
+fi
+
+if grep -Fq 'android:allowBackup="true"' "$ROOT_DIR/app/src/main/AndroidManifest.xml"; then
+  printf '%s\n' "Battery app must not allow Android backups." >&2
+  exit 1
+fi
+
 if grep -Fq "level > 31" "$MAIN_ACTIVITY"; then
   printf '%s\n' "Battery icon threshold must not skip levels 30 and 31." >&2
   exit 1
@@ -64,6 +78,11 @@ if ! grep -Fq "status: completed" "$PERCENT_CLAMP_PLAN"; then
   exit 1
 fi
 
+if ! grep -Fq "status: completed" "$BACKUP_PLAN" || ! grep -Fq "make check" "$BACKUP_PLAN"; then
+  printf '%s\n' "Battery backup policy plan must record completed make check verification." >&2
+  exit 1
+fi
+
 if ! grep -Fq "level < 65" "$MAIN_ACTIVITY"; then
   printf '%s\n' "Battery icon threshold must keep orange below 65 percent." >&2
   exit 1
@@ -81,6 +100,26 @@ fi
 
 if [ ! -f "$ROOT_DIR/CHANGES.md" ]; then
   printf '%s\n' "CHANGES.md is missing." >&2
+  exit 1
+fi
+
+if ! grep -Fq "local battery diagnostic state out of Android" "$README"; then
+  printf '%s\n' "README must document the battery backup policy." >&2
+  exit 1
+fi
+
+if ! grep -Fq "local battery diagnostic state out of Android" "$VISION"; then
+  printf '%s\n' "VISION must document the battery backup policy." >&2
+  exit 1
+fi
+
+if ! grep -Fq "local battery diagnostic state out of Android" "$SECURITY"; then
+  printf '%s\n' "SECURITY must document the battery backup policy." >&2
+  exit 1
+fi
+
+if ! grep -Fq "local battery diagnostic state out of Android" "$CHANGES"; then
+  printf '%s\n' "CHANGES must record the battery backup policy." >&2
   exit 1
 fi
 

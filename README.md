@@ -82,6 +82,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   missing fields.
 - The activity guards nullable action-bar access before applying the battery
   icon and hidden-title presentation.
+- The checked-in manifest keeps local battery diagnostic state out of Android
+  backups by default.
 
 ## Security and Privacy Notes
 
@@ -107,6 +109,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   percentage display range contract.
 - See `docs/plans/2026-06-09-battery-status-technology-display.md` for the
   battery state and technology display contract.
+- See `docs/plans/2026-06-09-battery-backup-policy.md` for the Android backup
+  policy contract.
 
 ## Contributing
 

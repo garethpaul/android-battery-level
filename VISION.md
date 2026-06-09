@@ -28,6 +28,7 @@ Priority:
   values
 - Keep legacy action-bar presentation optional so theme changes do not crash
   startup
+- Keep local battery diagnostic state out of Android backups by default
 
 Next priorities:
 

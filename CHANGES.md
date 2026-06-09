@@ -10,6 +10,7 @@
   presentation and added an SDK-free source contract for the startup path.
 - Displayed missing battery current readings as `Unknown` instead of the
   literal `null` text when no supported device current file is available.
+- Kept local battery diagnostic state out of Android backups by default.
 
 ## 2026-06-08
 
