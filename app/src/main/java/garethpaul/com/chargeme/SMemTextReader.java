@@ -38,13 +38,15 @@ public class SMemTextReader {
             FileReader fr = new FileReader("/sys/class/power_supply/battery/smem_text");
             BufferedReader br = new BufferedReader(fr);
 
+            final String currentFieldHead = "I_MBAT: ";
             String line = br.readLine();
 
             while (line != null)
             {
-                if (line.contains("I_MBAT"))
+                line = line.trim();
+                if (line.startsWith(currentFieldHead))
                 {
-                    text = line.substring(line.indexOf("I_MBAT: ") + 8);
+                    text = line.substring(currentFieldHead.length()).trim();
                     success = true;
                     break;
                 }

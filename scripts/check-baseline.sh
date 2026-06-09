@@ -4,6 +4,8 @@ set -eu
 ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 MAIN_ACTIVITY="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/MainActivity.java"
 CURRENT_READER="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/CurrentReader.java"
+SMEM_TEXT_READER="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/SMemTextReader.java"
+BATT_ATTR_TEXT_READER="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/BattAttrTextReader.java"
 LAYOUT="$ROOT_DIR/app/src/main/res/layout/activity_main.xml"
 README="$ROOT_DIR/README.md"
 VISION="$ROOT_DIR/VISION.md"
@@ -12,6 +14,7 @@ CHANGES="$ROOT_DIR/CHANGES.md"
 RES_DIR="$ROOT_DIR/app/src/main/res"
 PERCENT_CLAMP_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-percent-clamp.md"
 BACKUP_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-backup-policy.md"
+CURRENT_PREFIX_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-current-prefix-parsing.md"
 
 if grep -A3 "public void onPause()" "$MAIN_ACTIVITY" | grep -Fq "setup();"; then
   printf '%s\n' "onPause must unregister the battery receiver instead of calling setup()." >&2
@@ -125,6 +128,43 @@ fi
 
 if ! grep -Fq "Locale.US" "$CURRENT_READER"; then
   printf '%s\n' "CurrentReader must avoid default-locale model matching." >&2
+  exit 1
+fi
+
+for pattern in \
+  'final String currentFieldHead = "I_MBAT: ";' \
+  "line.startsWith(currentFieldHead)" \
+  "line.substring(currentFieldHead.length()).trim()"; do
+  if ! grep -Fq "$pattern" "$SMEM_TEXT_READER"; then
+    printf '%s\n' "Missing smem current field parsing contract: $pattern" >&2
+    exit 1
+  fi
+done
+
+if grep -Fq 'line.contains("I_MBAT")' "$SMEM_TEXT_READER"; then
+  printf '%s\n' "SMemTextReader must require the exact I_MBAT field prefix." >&2
+  exit 1
+fi
+
+for pattern in \
+  "line.startsWith(chargeFieldHead)" \
+  "line.substring(chargeFieldHead.length()).trim()" \
+  "line.startsWith(dischargeFieldHead)" \
+  "line.substring(dischargeFieldHead.length()).trim()"; do
+  if ! grep -Fq "$pattern" "$BATT_ATTR_TEXT_READER"; then
+    printf '%s\n' "Missing batt_attr current field parsing contract: $pattern" >&2
+    exit 1
+  fi
+done
+
+if grep -Fq "line.contains(chargeField)" "$BATT_ATTR_TEXT_READER" || \
+   grep -Fq "line.contains(dischargeField)" "$BATT_ATTR_TEXT_READER"; then
+  printf '%s\n' "BattAttrTextReader must require exact current field prefixes." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$CURRENT_PREFIX_PLAN"; then
+  printf '%s\n' "Battery current prefix parsing plan must be marked completed." >&2
   exit 1
 fi
 
@@ -264,6 +304,11 @@ fi
 
 if ! grep -Fq "battery state and technology fields" "$README"; then
   printf '%s\n' "README must document battery state and technology display handling." >&2
+  exit 1
+fi
+
+if ! grep -Fq "Current text-file readers require exact field prefixes" "$README"; then
+  printf '%s\n' "README must document exact current field prefix parsing." >&2
   exit 1
 fi
 

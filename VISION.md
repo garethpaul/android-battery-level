@@ -26,6 +26,7 @@ Priority:
 - Keep displayed battery units converted before presentation
 - Keep unavailable battery current readings clear instead of exposing raw null
   values
+- Keep current text-file parsing constrained to exact field prefixes
 - Keep legacy action-bar presentation optional so theme changes do not crash
   startup
 - Keep local battery diagnostic state out of Android backups by default

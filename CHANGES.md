@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Required exact field prefixes before parsing legacy battery current text files
+  so unrelated keys cannot be mistaken for current readings.
 - Populated battery state and technology display fields from Android battery
   broadcast extras and added SDK-free source contracts for the mappings.
 - Clamped normalized battery percentages to the 0 through 100 display range

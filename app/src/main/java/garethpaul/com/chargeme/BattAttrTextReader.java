@@ -47,9 +47,10 @@ public class BattAttrTextReader {
 
             while (line != null)
             {
-                if (line.contains(chargeField))
+                line = line.trim();
+                if (line.startsWith(chargeFieldHead))
                 {
-                    text = line.substring(line.indexOf(chargeFieldHead) + chargeFieldHead.length());
+                    text = line.substring(chargeFieldHead.length()).trim();
                     try {
                         value = Long.parseLong(text);
                         if (value != 0)
@@ -61,9 +62,9 @@ public class BattAttrTextReader {
                 }
 
                 //  "batt_discharge_current:"
-                if (line.contains(dischargeField))
+                if (line.startsWith(dischargeFieldHead))
                 {
-                    text = line.substring(line.indexOf(dischargeFieldHead) + dischargeFieldHead.length());
+                    text = line.substring(dischargeFieldHead.length()).trim();
                     try {
                         value = (-1)*Math.abs(Long.parseLong(text));
                     }

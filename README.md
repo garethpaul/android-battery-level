@@ -75,6 +75,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   with one decimal place.
 - Battery current uses `Unknown` when the device has no supported current
   sensor file.
+- Current text-file readers require exact field prefixes before parsing values
+  from legacy kernel power-supply files.
 - Battery level percentages are normalized against Android's reported scale and
   clamped to 0 through 100 before display.
 - Battery state, charging source, health, and technology display text are
@@ -105,6 +107,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   action-bar guard contract.
 - See `docs/plans/2026-06-09-battery-current-display-contracts.md` for the
   current display fallback.
+- See `docs/plans/2026-06-09-battery-current-prefix-parsing.md` for the
+  current text-file field parsing contract.
 - See `docs/plans/2026-06-09-battery-percent-clamp.md` for the battery
   percentage display range contract.
 - See `docs/plans/2026-06-09-battery-status-technology-display.md` for the
