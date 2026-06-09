@@ -55,6 +55,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 ## Testing and Verification
 
+- `make check` - runs the source baseline and Android SDK-backed Gradle checks
+  when `ANDROID_HOME` is configured
 - `scripts/check-baseline.sh` - runs SDK-free battery receiver and resource baseline checks
 - `./gradlew lint --no-daemon`, `./gradlew test --no-daemon`, and `./gradlew assembleDebug --no-daemon` when the Android SDK is configured
 
@@ -77,6 +79,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - This looks like a legacy Android project or sample. Expect Android SDK, Gradle, and support-library versions to matter.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
+- See `docs/plans/2026-06-08-battery-check-wrapper.md` for the root
+  verification wrapper baseline.
 
 ## Contributing
 

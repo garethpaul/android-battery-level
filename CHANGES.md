@@ -2,6 +2,8 @@
 
 ## 2026-06-08
 
+- Added `make check` as the root wrapper for battery source, lint, test, and
+  debug build verification.
 - Added a repository changelog and expanded the documented Android verification
   gate to include lint, tests, and debug assembly.
 - Cleaned Android lint findings by moving UI text into resources, replacing
