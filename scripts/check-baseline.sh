@@ -7,6 +7,7 @@ CURRENT_READER="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/CurrentReade
 LAYOUT="$ROOT_DIR/app/src/main/res/layout/activity_main.xml"
 README="$ROOT_DIR/README.md"
 RES_DIR="$ROOT_DIR/app/src/main/res"
+PERCENT_CLAMP_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-percent-clamp.md"
 
 if grep -A3 "public void onPause()" "$MAIN_ACTIVITY" | grep -Fq "setup();"; then
   printf '%s\n' "onPause must unregister the battery receiver instead of calling setup()." >&2
@@ -45,6 +46,21 @@ fi
 
 if grep -Fq "level > 31" "$MAIN_ACTIVITY"; then
   printf '%s\n' "Battery icon threshold must not skip levels 30 and 31." >&2
+  exit 1
+fi
+
+if grep -Fq "return Math.round((rawLevel * 100.0f) / scale);" "$MAIN_ACTIVITY"; then
+  printf '%s\n' "Battery level display must clamp normalized percentages." >&2
+  exit 1
+fi
+
+if ! grep -Fq "Math.max(0, Math.min(100, percent));" "$MAIN_ACTIVITY"; then
+  printf '%s\n' "Battery level percentages must be clamped to 0 through 100." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$PERCENT_CLAMP_PLAN"; then
+  printf '%s\n' "Battery percentage clamp plan must be marked completed." >&2
   exit 1
 fi
 
@@ -171,6 +187,11 @@ fi
 
 if ! grep -Fq "./gradlew assembleDebug --no-daemon" "$README"; then
   printf '%s\n' "README must document Gradle build verification." >&2
+  exit 1
+fi
+
+if ! grep -Fq "clamped to the 0 through 100 display range" "$README"; then
+  printf '%s\n' "README must document battery percentage clamping." >&2
   exit 1
 fi
 

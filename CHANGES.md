@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Clamped normalized battery percentages to the 0 through 100 display range
+  before icon threshold selection.
 - Guarded nullable action-bar access before applying the battery icon/title
   presentation and added an SDK-free source contract for the startup path.
 - Displayed missing battery current readings as `Unknown` instead of the

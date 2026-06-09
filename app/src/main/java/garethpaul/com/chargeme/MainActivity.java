@@ -142,7 +142,8 @@ public class MainActivity extends Activity{
             return -1;
         }
 
-        return Math.round((rawLevel * 100.0f) / scale);
+        int percent = Math.round((rawLevel * 100.0f) / scale);
+        return Math.max(0, Math.min(100, percent));
     }
 
     private void registerBatteryReceiver() {

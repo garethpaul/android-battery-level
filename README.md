@@ -59,7 +59,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   when `ANDROID_HOME` is configured
 - `scripts/check-baseline.sh` - runs SDK-free battery receiver and resource baseline checks
 - The baseline check protects battery level scaling, icon thresholds, receiver
-  lifecycle, and voltage unit display.
+  lifecycle, and voltage unit display. Normalized battery percentages are
+  clamped to the 0 through 100 display range before icon threshold selection.
 - `./gradlew lint --no-daemon`, `./gradlew test --no-daemon`, and `./gradlew assembleDebug --no-daemon` when the Android SDK is configured
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
@@ -72,6 +73,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   with one decimal place.
 - Battery current uses `Unknown` when the device has no supported current
   sensor file.
+- Battery level percentages are normalized against Android's reported scale and
+  clamped to 0 through 100 before display.
 - The activity guards nullable action-bar access before applying the battery
   icon and hidden-title presentation.
 
@@ -95,6 +98,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   action-bar guard contract.
 - See `docs/plans/2026-06-09-battery-current-display-contracts.md` for the
   current display fallback.
+- See `docs/plans/2026-06-09-battery-percent-clamp.md` for the battery
+  percentage display range contract.
 
 ## Contributing
 
