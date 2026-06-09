@@ -63,6 +63,22 @@ if ! grep -Fq "Locale.US" "$CURRENT_READER"; then
   exit 1
 fi
 
+if grep -Fq 'String.valueOf(getVoltage()) + "V"' "$MAIN_ACTIVITY"; then
+  printf '%s\n' "Battery voltage must not display raw millivolts as volts." >&2
+  exit 1
+fi
+
+for pattern in \
+  "batteryVoltageText(getVoltage())" \
+  "private static String batteryVoltageText(int millivolts)" \
+  "String.format(Locale.US, \"%.1fV\", millivolts / 1000.0f)" \
+  "return \"Unknown\";"; do
+  if ! grep -Fq "$pattern" "$MAIN_ACTIVITY"; then
+    printf '%s\n' "Missing voltage display contract: $pattern" >&2
+    exit 1
+  fi
+done
+
 if [ -f "$ROOT_DIR/app/src/main/res/menu/menu_main.xml" ]; then
   printf '%s\n' "Unused starter menu resource must not be restored." >&2
   exit 1

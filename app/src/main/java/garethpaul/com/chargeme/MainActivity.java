@@ -10,6 +10,8 @@ import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.Locale;
+
 
 public class MainActivity extends Activity{
     private mBatInfoReceiver myBatInfoReceiver;
@@ -111,7 +113,7 @@ public class MainActivity extends Activity{
         batteryTemp.setText(batteryTemperature(this));
 
         TextView voltageText = (TextView) findViewById(R.id.voltage);
-        voltageText.setText(String.valueOf(getVoltage()) + "V");
+        voltageText.setText(batteryVoltageText(getVoltage()));
 
         TextView modelText = (TextView) findViewById(R.id.model);
         modelText.setText(getDeviceName());
@@ -194,6 +196,14 @@ public class MainActivity extends Activity{
             return -1;
         }
         return b.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1);
+    }
+
+    private static String batteryVoltageText(int millivolts) {
+        if (millivolts < 0) {
+            return "Unknown";
+        }
+
+        return String.format(Locale.US, "%.1fV", millivolts / 1000.0f);
     }
 
 }

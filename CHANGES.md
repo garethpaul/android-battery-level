@@ -17,3 +17,4 @@
   against Android's reported battery scale.
 - Tightened battery icon thresholds so 30 and 31 percent no longer fall through
   to the green state.
+- Converted raw battery millivolt readings into one-decimal volt display text.
