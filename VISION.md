@@ -24,6 +24,7 @@ Priority:
 - Keep state and technology fields populated from battery broadcast extras
 - Keep sticky battery intent helper paths safe when broadcasts are unavailable
 - Keep receiver-backed temperature reads null-safe and one-decimal accurate
+- Distinguish unavailable temperature data from a real zero-degree reading
 - Keep normalized battery percentages clamped to the user-visible display range
 - Keep displayed battery units converted before presentation
 - Keep unavailable battery current readings clear instead of exposing raw null

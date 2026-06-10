@@ -57,13 +57,14 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Testing and Verification
 
 - `make check` - runs the source baseline and Android SDK-backed Gradle checks
-  when `ANDROID_HOME` is configured
+  when `ANDROID_HOME` or `ANDROID_SDK_ROOT` is configured
 - `scripts/check-baseline.sh` - runs SDK-free battery receiver and resource baseline checks
 - GitHub Actions runs `make check` on pushes and pull requests. On hosted
   Linux runners without the legacy Android SDK, the SDK-free baseline still
-  runs and Gradle gates report clear skips.
-- Local Gradle checks require an explicit `ANDROID_HOME`; CI clears ambient SDK
-  variables to preserve the documented static-only boundary.
+  runs and Gradle gates report clear skips. The workflow uses Ubuntu 24.04 and
+  cancels superseded runs.
+- Local Gradle checks accept `ANDROID_HOME` or `ANDROID_SDK_ROOT`; CI clears
+  both variables to preserve the documented static-only boundary.
 - The baseline check protects battery level scaling, icon thresholds, receiver
   lifecycle, and voltage unit display. Normalized battery percentages are
   clamped to the 0 through 100 display range before icon threshold selection.
@@ -91,7 +92,10 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Sticky battery intent helper paths tolerate missing contexts or broadcasts
   and keep display helpers on `Unknown` fallbacks instead of crashing.
 - Battery receiver temperature updates ignore missing broadcast intents and
-  preserve one-decimal Celsius values for receiver-backed reads.
+  missing temperature extras, preserve the previous valid receiver value, and
+  reject invalid sentinels.
+- Battery temperature display uses `Unknown` when the sticky broadcast omits
+  temperature data and formats valid tenths as one-decimal Celsius values.
 - The activity guards nullable action-bar access before applying the battery
   icon and hidden-title presentation.
 - The checked-in manifest keeps local battery diagnostic state out of Android

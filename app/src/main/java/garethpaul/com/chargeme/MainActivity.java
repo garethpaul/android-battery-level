@@ -237,12 +237,22 @@ public class MainActivity extends Activity{
 
     public static String batteryTemperature(Context context)
     {
-        Intent intent = batteryStatusIntent(context);
-        if (intent == null) {
+        return batteryTemperatureText(batteryStatusIntent(context));
+    }
+
+    private static String batteryTemperatureText(Intent intent) {
+        if (intent == null || !intent.hasExtra(BatteryManager.EXTRA_TEMPERATURE)) {
             return "Unknown";
         }
-        float  temp   = ((float) intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE,0)) / 10;
-        return String.valueOf(temp) + " \u2103";
+
+        int temperatureTenths = intent.getIntExtra(
+                BatteryManager.EXTRA_TEMPERATURE,
+                Integer.MIN_VALUE);
+        if (temperatureTenths == Integer.MIN_VALUE) {
+            return "Unknown";
+        }
+
+        return String.format(Locale.US, "%.1f \u2103", temperatureTenths / 10.0f);
     }
 
     public int getVoltage()

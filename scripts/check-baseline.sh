@@ -103,6 +103,8 @@ fi
 for workflow_contract in \
   "permissions:" \
   "contents: read" \
+  "runs-on: ubuntu-24.04" \
+  "cancel-in-progress: true" \
   "timeout-minutes: 5" \
   "workflow_dispatch:" \
   "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" \
@@ -111,6 +113,15 @@ for workflow_contract in \
   "make check"; do
   if ! grep -Fq "$workflow_contract" "$CI_WORKFLOW"; then
     printf '%s\n' "GitHub Actions check workflow must keep contract: $workflow_contract" >&2
+    exit 1
+  fi
+done
+
+for make_contract in \
+  'ROOT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))' \
+  'ANDROID_SDK := $(if $(ANDROID_HOME),$(ANDROID_HOME),$(ANDROID_SDK_ROOT))'; do
+  if ! grep -Fq "$make_contract" "$ROOT_DIR/Makefile"; then
+    printf '%s\n' "Makefile must keep contract: $make_contract" >&2
     exit 1
   fi
 done
@@ -386,8 +397,38 @@ if ! grep -Fq "return temp / 10.0f;" "$BAT_INFO_RECEIVER"; then
   exit 1
 fi
 
-if ! grep -Fq "intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, temp)" "$BAT_INFO_RECEIVER"; then
-  printf '%s\n' "Battery info receiver must preserve the previous temperature when the extra is missing." >&2
+if ! grep -Fq "!intent.hasExtra(BatteryManager.EXTRA_TEMPERATURE)" "$BAT_INFO_RECEIVER"; then
+  printf '%s\n' "Battery info receiver must explicitly ignore broadcasts without temperature data." >&2
+  exit 1
+fi
+
+if ! grep -Fq "receivedTemperature != Integer.MIN_VALUE" "$BAT_INFO_RECEIVER"; then
+  printf '%s\n' "Battery info receiver must reject invalid temperature sentinels." >&2
+  exit 1
+fi
+
+if ! grep -Fq "batteryTemperatureText(batteryStatusIntent(context))" "$MAIN_ACTIVITY"; then
+  printf '%s\n' "Battery temperature display must use the shared intent formatter." >&2
+  exit 1
+fi
+
+if ! grep -Fq "!intent.hasExtra(BatteryManager.EXTRA_TEMPERATURE)" "$MAIN_ACTIVITY"; then
+  printf '%s\n' "Battery temperature display must reject missing extras." >&2
+  exit 1
+fi
+
+if ! grep -Fq "temperatureTenths == Integer.MIN_VALUE" "$MAIN_ACTIVITY"; then
+  printf '%s\n' "Battery temperature display must reject invalid sentinels." >&2
+  exit 1
+fi
+
+if ! grep -Fq "Integer.MIN_VALUE);" "$MAIN_ACTIVITY"; then
+  printf '%s\n' "Battery temperature extraction must use the invalid-value sentinel." >&2
+  exit 1
+fi
+
+if ! grep -Fq 'String.format(Locale.US, "%.1f \u2103", temperatureTenths / 10.0f)' "$MAIN_ACTIVITY"; then
+  printf '%s\n' "Battery temperature display must preserve one decimal and Celsius units." >&2
   exit 1
 fi
 

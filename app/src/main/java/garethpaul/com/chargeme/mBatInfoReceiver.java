@@ -22,7 +22,16 @@ public class mBatInfoReceiver extends BroadcastReceiver {
             return;
         }
 
-        temp = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, temp);
+        if (!intent.hasExtra(BatteryManager.EXTRA_TEMPERATURE)) {
+            return;
+        }
+
+        int receivedTemperature = intent.getIntExtra(
+                BatteryManager.EXTRA_TEMPERATURE,
+                Integer.MIN_VALUE);
+        if (receivedTemperature != Integer.MIN_VALUE) {
+            temp = receivedTemperature;
+        }
 
     }
 
