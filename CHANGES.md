@@ -1,5 +1,14 @@
 # Changes
 
+## 2026-06-10
+
+- Added a pinned, read-only GitHub Actions workflow that runs `make check` for
+  the battery receiver and resource baseline with a bounded timeout and
+  explicit SDK-free execution.
+- Extended the SDK-free baseline to require the CI workflow and completed CI
+  plan.
+- Removed the maintainer-specific Android SDK path from the Makefile.
+
 ## 2026-06-09
 
 - Guarded the battery receiver against missing broadcast intents and preserved

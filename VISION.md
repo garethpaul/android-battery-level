@@ -32,6 +32,7 @@ Priority:
 - Keep legacy action-bar presentation optional so theme changes do not crash
   startup
 - Keep local battery diagnostic state out of Android backups by default
+- Keep the SDK-free `make check` baseline running in GitHub Actions
 
 Next priorities:
 

@@ -12,6 +12,7 @@ This README is based on the checked-in source, manifests, scripts, and repositor
 ## Repository Contents
 
 - `README.md` - project overview and local usage notes
+- `.github/workflows/check.yml` - GitHub Actions baseline for `make check`
 - `build.gradle` - Android or Gradle build configuration
 - `app` - source or example code
 - `docs` - source or example code
@@ -58,6 +59,11 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - `make check` - runs the source baseline and Android SDK-backed Gradle checks
   when `ANDROID_HOME` is configured
 - `scripts/check-baseline.sh` - runs SDK-free battery receiver and resource baseline checks
+- GitHub Actions runs `make check` on pushes and pull requests. On hosted
+  Linux runners without the legacy Android SDK, the SDK-free baseline still
+  runs and Gradle gates report clear skips.
+- Local Gradle checks require an explicit `ANDROID_HOME`; CI clears ambient SDK
+  variables to preserve the documented static-only boundary.
 - The baseline check protects battery level scaling, icon thresholds, receiver
   lifecycle, and voltage unit display. Normalized battery percentages are
   clamped to the 0 through 100 display range before icon threshold selection.
@@ -123,6 +129,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   battery intent helper boundaries.
 - See `docs/plans/2026-06-09-battery-receiver-temperature-guard.md` for the
   receiver temperature guard.
+- See `docs/plans/2026-06-10-ci-baseline.md` for the lightweight GitHub
+  Actions baseline.
 
 ## Contributing
 
