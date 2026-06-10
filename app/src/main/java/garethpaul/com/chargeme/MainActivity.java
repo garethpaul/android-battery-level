@@ -14,7 +14,7 @@ import android.widget.TextView;
 import java.util.Locale;
 
 
-public class MainActivity extends Activity{
+public class MainActivity extends Activity implements mBatInfoReceiver.TemperatureListener{
     private mBatInfoReceiver myBatInfoReceiver;
     private boolean batteryReceiverRegistered;
     private int level;
@@ -196,7 +196,7 @@ public class MainActivity extends Activity{
             return;
         }
 
-        myBatInfoReceiver = new mBatInfoReceiver();
+        myBatInfoReceiver = new mBatInfoReceiver(this);
         this.registerReceiver(this.myBatInfoReceiver,
                 new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         batteryReceiverRegistered = true;
@@ -240,6 +240,14 @@ public class MainActivity extends Activity{
         return batteryTemperatureText(batteryStatusIntent(context));
     }
 
+    @Override
+    public void onTemperatureChanged(int temperatureTenths) {
+        TextView batteryTemp = (TextView) findViewById(R.id.temperature);
+        if (batteryTemp != null) {
+            batteryTemp.setText(batteryTemperatureText(temperatureTenths));
+        }
+    }
+
     private static String batteryTemperatureText(Intent intent) {
         if (intent == null || !intent.hasExtra(BatteryManager.EXTRA_TEMPERATURE)) {
             return "Unknown";
@@ -248,6 +256,14 @@ public class MainActivity extends Activity{
         int temperatureTenths = intent.getIntExtra(
                 BatteryManager.EXTRA_TEMPERATURE,
                 Integer.MIN_VALUE);
+        if (temperatureTenths == Integer.MIN_VALUE) {
+            return "Unknown";
+        }
+
+        return batteryTemperatureText(temperatureTenths);
+    }
+
+    private static String batteryTemperatureText(int temperatureTenths) {
         if (temperatureTenths == Integer.MIN_VALUE) {
             return "Unknown";
         }

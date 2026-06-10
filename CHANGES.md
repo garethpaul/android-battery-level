@@ -4,6 +4,8 @@
 
 - Added explicit missing/sentinel guards for receiver and displayed battery
   temperatures so unavailable data renders as `Unknown`, not `0.0 ℃`.
+- Connected valid receiver temperature broadcasts to the activity display so
+  the visible value no longer remains stale until resume.
 - Made root checks location-independent, accepted `ANDROID_SDK_ROOT`, and
   pinned CI to Ubuntu 24.04 with superseded-run cancellation.
 - Added a pinned, read-only GitHub Actions workflow that runs `make check` for

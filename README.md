@@ -93,7 +93,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   and keep display helpers on `Unknown` fallbacks instead of crashing.
 - Battery receiver temperature updates ignore missing broadcast intents and
   missing temperature extras, preserve the previous valid receiver value, and
-  reject invalid sentinels.
+  reject invalid sentinels. Valid broadcasts immediately refresh the visible
+  temperature through the activity listener.
 - Battery temperature display uses `Unknown` when the sticky broadcast omits
   temperature data and formats valid tenths as one-decimal Celsius values.
 - The activity guards nullable action-bar access before applying the battery

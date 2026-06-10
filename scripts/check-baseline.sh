@@ -407,6 +407,26 @@ if ! grep -Fq "receivedTemperature != Integer.MIN_VALUE" "$BAT_INFO_RECEIVER"; t
   exit 1
 fi
 
+for live_temperature_contract in \
+  "interface TemperatureListener" \
+  "temperatureListener.onTemperatureChanged(receivedTemperature);"; do
+  if ! grep -Fq "$live_temperature_contract" "$BAT_INFO_RECEIVER"; then
+    printf '%s\n' "Battery receiver live updates must keep contract: $live_temperature_contract" >&2
+    exit 1
+  fi
+done
+
+for activity_temperature_contract in \
+  "implements mBatInfoReceiver.TemperatureListener" \
+  "new mBatInfoReceiver(this)" \
+  "public void onTemperatureChanged(int temperatureTenths)" \
+  "batteryTemp.setText(batteryTemperatureText(temperatureTenths));"; do
+  if ! grep -Fq "$activity_temperature_contract" "$MAIN_ACTIVITY"; then
+    printf '%s\n' "Battery activity live updates must keep contract: $activity_temperature_contract" >&2
+    exit 1
+  fi
+done
+
 if ! grep -Fq "batteryTemperatureText(batteryStatusIntent(context))" "$MAIN_ACTIVITY"; then
   printf '%s\n' "Battery temperature display must use the shared intent formatter." >&2
   exit 1
@@ -439,6 +459,12 @@ fi
 
 if ! grep -Fq "make check" "$ROOT_DIR/docs/plans/2026-06-09-battery-receiver-temperature-guard.md"; then
   printf '%s\n' "Battery receiver temperature guard plan must document make check verification." >&2
+  exit 1
+fi
+
+if ! grep -Fq "Status: Completed" "$ROOT_DIR/docs/plans/2026-06-10-battery-live-temperature.md" || \
+   ! grep -Fq "make check" "$ROOT_DIR/docs/plans/2026-06-10-battery-live-temperature.md"; then
+  printf '%s\n' "Battery live-temperature plan must record completed status and make check verification." >&2
   exit 1
 fi
 
