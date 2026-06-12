@@ -35,10 +35,13 @@ Priority:
   startup
 - Keep local battery diagnostic state out of Android backups by default
 - Keep the SDK-free `make check` baseline running in GitHub Actions
+- Keep the legacy Gradle runtime isolated behind a checksum-verified generated
+  wrapper
 
 Next priorities:
 
-- Modernize Gradle, SDK levels, and Android plugin versions in a dedicated pass
+- Evaluate Gradle runtime, SDK level, and Android plugin modernization together
+  in a dedicated compatibility pass; wrapper bootstrap hardening is complete
 - Add tests for battery formatting and lifecycle edge cases
 - Review behavior across charging states and newer Android versions
 - Improve UI labels without changing the sample's simple purpose

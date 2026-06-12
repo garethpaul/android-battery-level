@@ -40,7 +40,7 @@ Additional scan context:
 
 - Git
 - Android Studio or a compatible Android SDK
-- Gradle or the checked-in Gradle wrapper when present
+- Java 8 and the checked-in Gradle wrapper
 
 ### Setup
 
@@ -54,6 +54,13 @@ scripts/check-baseline.sh
 ```
 
 The setup commands above are derived from repository files. Legacy mobile, Python, or JavaScript samples may require older SDKs or package versions than a modern workstation uses by default.
+
+The checked-in wrapper still executes Gradle 2.2.1 for compatibility. Its
+current bootstrap verifies the downloaded all distribution with
+`distributionSha256Sum`, and the SDK-free baseline verifies the checked-in
+wrapper JAR and generated launchers. This authenticates the expected wrapper
+and distribution bytes but does not make the first build offline-reproducible;
+an uncached build still needs HTTPS access to Gradle's distribution service.
 
 ## Running or Using the Project
 
@@ -75,6 +82,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - The battery state and technology fields are populated from Android's battery
   status broadcast instead of leaving first-render placeholders in place.
 - `./gradlew lint --no-daemon`, `./gradlew test --no-daemon`, and `./gradlew assembleDebug --no-daemon` when the Android SDK is configured
+- [`docs/plans/2026-06-12-gradle-wrapper-verification.md`](docs/plans/2026-06-12-gradle-wrapper-verification.md)
+  records the wrapper provenance, compatibility boundary, and verification
+  evidence.
 
 The legacy target SDK produces one documented `OldTargetApi` compatibility
 warning. When the required SDK is unavailable locally, use static checks and

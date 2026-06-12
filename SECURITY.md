@@ -33,6 +33,9 @@ Helpful reports include:
 - Pinned, read-only GitHub Actions runs the guarded `make check` baseline;
   review workflow, Gradle, and checker changes as part of the supply-chain
   surface.
+- The baseline pins and verifies the wrapper JAR and Gradle distribution checksums.
+  An uncached build still depends on HTTPS access to Gradle's distribution
+  service, so these integrity controls do not provide offline reproducibility.
 - Hosted checkout credentials are not persisted. CODEOWNERS assigns itself,
   the workflow, Makefile, and baseline checker to the repository owner;
   repository rules should require that approval.
@@ -51,6 +54,12 @@ backups by default.
 ## Dependency and Supply Chain Security
 
 Dependency updates should come from trusted package managers and should keep lockfiles in sync when lockfiles exist. Do not commit credentials, private keys, tokens, generated secrets, or machine-local configuration. If a vulnerability depends on a compromised package, typosquatting risk, insecure transitive dependency, or unsafe build step, include the package name, affected version, and the path through which it is used.
+
+The checked-in wrapper uses a generated Gradle 8.14.5 bootstrap while retaining
+the legacy Gradle 2.2.1 runtime required by Android Gradle Plugin 1.1.0. Review
+changes to `gradlew`, `gradlew.bat`, `gradle-wrapper.jar`, and
+`gradle-wrapper.properties` together. The SDK-free baseline rejects drift from
+Gradle's published wrapper JAR and distribution SHA-256 values.
 
 ## Safe Research Guidelines
 
