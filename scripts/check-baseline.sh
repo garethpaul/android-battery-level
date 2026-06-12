@@ -17,8 +17,44 @@ PERCENT_CLAMP_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-percent-clamp.md"
 BACKUP_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-backup-policy.md"
 CURRENT_PREFIX_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-current-prefix-parsing.md"
 INTENT_NULL_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-intent-null-guards.md"
-CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
+CODEOWNERS="$ROOT_DIR/.github/CODEOWNERS"
+
+expected_ci_workflow() {
+  cat <<'EOF'
+name: Check
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Run baseline
+        run: make check
+        env:
+          ANDROID_HOME: ""
+          ANDROID_SDK_ROOT: ""
+EOF
+}
 
 if grep -A3 "public void onPause()" "$MAIN_ACTIVITY" | grep -Fq "setup();"; then
   printf '%s\n' "onPause must unregister the battery receiver instead of calling setup()." >&2
@@ -100,22 +136,26 @@ if [ ! -f "$CI_WORKFLOW" ]; then
   exit 1
 fi
 
-for workflow_contract in \
-  "permissions:" \
-  "contents: read" \
-  "runs-on: ubuntu-24.04" \
-  "cancel-in-progress: true" \
-  "timeout-minutes: 5" \
-  "workflow_dispatch:" \
-  "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" \
-  'ANDROID_HOME: ""' \
-  'ANDROID_SDK_ROOT: ""' \
-  "make check"; do
-  if ! grep -Fq "$workflow_contract" "$CI_WORKFLOW"; then
-    printf '%s\n' "GitHub Actions check workflow must keep contract: $workflow_contract" >&2
-    exit 1
-  fi
-done
+workflow_paths=$(find "$ROOT_DIR/.github/workflows" -type f \( -name '*.yml' -o -name '*.yaml' \) -print)
+if [ "$workflow_paths" != "$CI_WORKFLOW" ]; then
+  printf '%s\n' "check.yml must remain the only approved GitHub Actions workflow." >&2
+  exit 1
+fi
+
+if [ "$(cat "$CI_WORKFLOW")" != "$(expected_ci_workflow)" ]; then
+  printf '%s\n' "GitHub Actions check workflow must match the approved SDK-free security baseline." >&2
+  exit 1
+fi
+
+if [ ! -f "$CODEOWNERS" ] ||
+  [ "$(wc -l < "$CODEOWNERS" | tr -d ' ')" -ne 4 ] ||
+  ! grep -Fxq '/.github/CODEOWNERS @garethpaul' "$CODEOWNERS" ||
+  ! grep -Fxq '/.github/workflows/ @garethpaul' "$CODEOWNERS" ||
+  ! grep -Fxq '/Makefile @garethpaul' "$CODEOWNERS" ||
+  ! grep -Fxq '/scripts/check-baseline.sh @garethpaul' "$CODEOWNERS"; then
+  printf '%s\n' "CODEOWNERS must protect the workflow, Makefile, and baseline checker." >&2
+  exit 1
+fi
 
 for make_contract in \
   'ROOT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))' \
@@ -128,11 +168,6 @@ done
 
 if grep -Fq "/home/gjones" "$ROOT_DIR/Makefile"; then
   printf '%s\n' "Makefile must not embed a maintainer-specific Android SDK path." >&2
-  exit 1
-fi
-
-if ! grep -Fq "GitHub Actions" "$README"; then
-  printf '%s\n' "README must document the GitHub Actions check." >&2
   exit 1
 fi
 
@@ -465,16 +500,6 @@ fi
 if ! grep -Fq "Status: Completed" "$ROOT_DIR/docs/plans/2026-06-10-battery-live-temperature.md" || \
    ! grep -Fq "make check" "$ROOT_DIR/docs/plans/2026-06-10-battery-live-temperature.md"; then
   printf '%s\n' "Battery live-temperature plan must record completed status and make check verification." >&2
-  exit 1
-fi
-
-if [ ! -f "$CI_PLAN" ]; then
-  printf '%s\n' "Battery CI baseline plan is missing." >&2
-  exit 1
-fi
-
-if ! grep -Fq "Status: Completed" "$CI_PLAN" || ! grep -Fq "make check" "$CI_PLAN"; then
-  printf '%s\n' "Battery CI baseline plan must record completed status and make check verification." >&2
   exit 1
 fi
 

@@ -27,6 +27,11 @@ contracts are checked before review.
   SDK variables so CI cannot accidentally invoke the unsupported Gradle path.
 - Extended `scripts/check-baseline.sh` to require the CI workflow and this
   completed plan.
+- Disabled persisted checkout credentials and replaced partial string matching
+  with a canonical single-workflow contract.
+- Added self-protecting CODEOWNERS coverage for the workflow, Makefile, and
+  baseline checker; repository rules remain responsible for requiring owner
+  approval.
 - Updated README, VISION, SECURITY, and CHANGES with the CI baseline.
 
 ## Verification
