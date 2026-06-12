@@ -90,7 +90,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Current text-file readers require exact field prefixes before parsing values
   from legacy kernel power-supply files.
 - Battery level percentages are normalized against Android's reported scale and
-  clamped to 0 through 100 before display.
+  clamped to 0 through 100 before display. Missing or invalid level data is
+  displayed as `Unknown` instead of exposing the internal `-1` sentinel.
 - Battery state, charging source, health, and technology display text are
   derived from Android battery broadcast extras, with `Unknown` fallbacks for
   missing fields.
@@ -131,6 +132,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   current text-file field parsing contract.
 - See `docs/plans/2026-06-09-battery-percent-clamp.md` for the battery
   percentage display range contract.
+- See `docs/plans/2026-06-12-battery-level-unavailable-display.md` for the
+  unavailable battery-level display contract.
 - See `docs/plans/2026-06-09-battery-status-technology-display.md` for the
   battery state and technology display contract.
 - See `docs/plans/2026-06-09-battery-backup-policy.md` for the Android backup

@@ -88,7 +88,7 @@ public class MainActivity extends Activity implements mBatInfoReceiver.Temperatu
 
         // Battery Level
         TextView levelText = (TextView) findViewById(R.id.level);
-        levelText.setText(String.valueOf(level));
+        levelText.setText(batteryLevelText(level));
 
         ImageView batteryImage = (ImageView) findViewById(R.id.battery);
 
@@ -133,6 +133,14 @@ public class MainActivity extends Activity implements mBatInfoReceiver.Temperatu
 
         int percent = Math.round((rawLevel * 100.0f) / scale);
         return Math.max(0, Math.min(100, percent));
+    }
+
+    private static String batteryLevelText(int levelPercent) {
+        if (levelPercent < 0) {
+            return "Unknown";
+        }
+
+        return String.valueOf(levelPercent);
     }
 
     private static String batteryStatusText(int status) {
