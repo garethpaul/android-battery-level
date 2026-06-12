@@ -1,6 +1,6 @@
 # Hosted Android Verification
 
-## Status: Planned
+## Status: Implementation Complete; Hosted Verification Pending
 
 ## Context
 
@@ -26,12 +26,13 @@ pushes instead of skipping every hosted Gradle task.
 
 ## Verification
 
-- Run SDK-backed `make check` from the repository root and an external working
-  directory.
-- Confirm lint reports exactly the documented `OldTargetApi` warning.
-- Run hostile workflow, documentation, and plan-evidence mutations.
-- Run `git diff --check`.
-- Require the exact-head pull-request workflow to pass.
+- Passed SDK-backed `make check` from the repository root.
+- Passed the same complete gate from an external working directory.
+- Confirmed lint reports exactly the documented `OldTargetApi` warning.
+- Confirmed eight hostile workflow, checker, documentation, and plan-status
+  mutations are rejected.
+- Passed `git diff --check`.
+- Exact-head pull-request workflow pending after the implementation push.
 
 ## Boundaries
 
