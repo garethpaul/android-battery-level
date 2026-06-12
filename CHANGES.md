@@ -14,6 +14,9 @@
 - Extended the SDK-free baseline to require the CI workflow and completed CI
   plan.
 - Removed the maintainer-specific Android SDK path from the Makefile.
+- Disabled persisted checkout credentials, assigned CODEOWNERS and CI policy
+  files to the repository owner, and replaced substring checks with one
+  canonical workflow contract.
 
 ## 2026-06-09
 

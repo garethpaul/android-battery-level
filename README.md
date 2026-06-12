@@ -3,6 +3,11 @@
 <!-- README-OVERVIEW-IMAGE -->
 ![Project overview](docs/readme-overview.svg)
 
+## Device Preview
+
+<!-- DEVICE-PREVIEW-IMAGE -->
+![Device preview](docs/device-preview.svg)
+
 ## Overview
 
 `garethpaul/android-battery-level` is an Android application or sample. Get the Android Battery Level. 
@@ -59,12 +64,11 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - `make check` - runs the source baseline and Android SDK-backed Gradle checks
   when `ANDROID_HOME` or `ANDROID_SDK_ROOT` is configured
 - `scripts/check-baseline.sh` - runs SDK-free battery receiver and resource baseline checks
-- GitHub Actions runs `make check` on pushes and pull requests. On hosted
-  Linux runners without the legacy Android SDK, the SDK-free baseline still
-  runs and Gradle gates report clear skips. The workflow uses Ubuntu 24.04 and
-  cancels superseded runs.
-- Local Gradle checks accept `ANDROID_HOME` or `ANDROID_SDK_ROOT`; CI clears
-  both variables to preserve the documented static-only boundary.
+- The canonical GitHub Actions workflow installs Android API 22 and build-tools
+  24.0.3, selects Java 8, and runs full `make check` on pushes and pull
+  requests. The workflow uses Ubuntu 24.04 and cancels superseded runs.
+- Local Gradle checks accept `ANDROID_HOME` or `ANDROID_SDK_ROOT` and match the
+  hosted toolchain contract.
 - The baseline check protects battery level scaling, icon thresholds, receiver
   lifecycle, and voltage unit display. Normalized battery percentages are
   clamped to the 0 through 100 display range before icon threshold selection.
@@ -72,12 +76,16 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   status broadcast instead of leaving first-render placeholders in place.
 - `./gradlew lint --no-daemon`, `./gradlew test --no-daemon`, and `./gradlew assembleDebug --no-daemon` when the Android SDK is configured
 
-When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
+The legacy target SDK produces one documented `OldTargetApi` compatibility
+warning. When the required SDK is unavailable locally, use static checks and
+source review first, then rely on the hosted matching platform toolchain.
 
 ## Configuration and Secrets
 
 - No required secret or credential file was identified in the repository scan. If you add integrations later, keep secrets out of git.
 - The legacy Android build is pinned to Android build-tools 24.0.3 for this baseline.
+- The legacy Android plugin uses its non-queued PNG cruncher because the newer
+  concurrent cruncher can fail nondeterministically on clean hosted builds.
 - Battery voltage is read from Android in millivolts and displayed as volts
   with one decimal place.
 - Battery current uses `Unknown` when the device has no supported current
@@ -117,6 +125,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-08-battery-check-wrapper.md` for the root
   verification wrapper baseline.
+- See `docs/plans/2026-06-12-hosted-android-verification.md` for the complete
+  hosted Android lint, test, and build gate.
 - See `docs/plans/2026-06-09-battery-voltage-display-contracts.md` for the
   voltage display contract.
 - See `docs/plans/2026-06-09-battery-actionbar-guard.md` for the nullable

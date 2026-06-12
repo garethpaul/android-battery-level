@@ -33,6 +33,11 @@ Helpful reports include:
 - Pinned, read-only GitHub Actions runs the guarded `make check` baseline;
   review workflow, Gradle, and checker changes as part of the supply-chain
   surface.
+- Hosted checkout credentials are not persisted. CODEOWNERS assigns itself,
+  the workflow, Makefile, and baseline checker to the repository owner;
+  repository rules should require that approval.
+- `check.yml` remains the only approved workflow until another workflow
+  receives an explicit least-privilege security contract.
 - Battery intent helper paths should tolerate unavailable contexts or broadcasts
   and display fallback values without crashing the local diagnostic UI.
 

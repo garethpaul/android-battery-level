@@ -4,6 +4,10 @@ android {
     compileSdkVersion 22
     buildToolsVersion "24.0.3"
 
+    aaptOptions {
+        useNewCruncher false
+    }
+
     defaultConfig {
         applicationId "garethpaul.com.chargeme"
         minSdkVersion 21
