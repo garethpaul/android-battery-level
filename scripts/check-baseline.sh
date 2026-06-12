@@ -284,7 +284,10 @@ if [ ! -f "$WRAPPER_PLAN" ] || \
    ! grep -Fq "rejected the deliberately incorrect distribution checksum" "$WRAPPER_PLAN" || \
    ! grep -Fq 'SDK-backed `make check` passed' "$WRAPPER_PLAN" || \
    ! grep -Fq "external working directory" "$WRAPPER_PLAN" || \
-   ! grep -Fq "hostile mutation checks rejected" "$WRAPPER_PLAN"; then
+   ! grep -Fq "hostile mutation checks rejected" "$WRAPPER_PLAN" || \
+   ! grep -Fq 'pull-request `Check` run `27439059851` passed' "$WRAPPER_PLAN" || \
+   ! grep -Fq 'CodeQL run `27439056892` passed' "$WRAPPER_PLAN" || \
+   ! grep -Fq "064cd895e2895ca962da4a5dbd49ed3a721eebac" "$WRAPPER_PLAN"; then
   printf '%s\n' "Gradle wrapper verification plan must record completed local verification evidence." >&2
   exit 1
 fi

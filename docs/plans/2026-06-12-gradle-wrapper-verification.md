@@ -245,6 +245,16 @@ alter the established Android compatibility boundary.
   checksum, wrapper JAR, generated launcher, documentation boundary, and plan
   completion evidence.
 - `sh -n scripts/check-baseline.sh` and `git diff --check` passed.
-- Hosted exact-head push, pull-request, and code-scanning evidence will be
-  appended after the implementation commit is pushed; no hosted result is
-  claimed by this local completion record.
+
+## Hosted Verification
+
+- On implementation head `064cd895e2895ca962da4a5dbd49ed3a721eebac`,
+  pull-request `Check` run `27439059851` passed the full Java 8/API 22 gate.
+- CodeQL run `27439056892` passed both the actions and java-kotlin analyzers on
+  the same implementation head.
+- PR #2 was open, clean, and mergeable at that head. The workflow intentionally
+  limits regular push runs to `master`, so the feature branch has no separate
+  push-event `Check` run; the pull-request gate and exact-head CodeQL results
+  are the pre-merge hosted evidence.
+- The final evidence-only commit must rerun these same pull-request and CodeQL
+  gates before tracker reconciliation.
