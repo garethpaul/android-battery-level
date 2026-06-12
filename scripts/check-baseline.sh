@@ -212,11 +212,12 @@ if [ ! -f "$CI_PLAN" ] || \
 fi
 
 if [ ! -f "$HOSTED_ANDROID_PLAN" ] || \
-   ! grep -Fq "Status: Implementation Complete; Hosted Verification Pending" "$HOSTED_ANDROID_PLAN" || \
+   ! grep -Fq "Status: Completed" "$HOSTED_ANDROID_PLAN" || \
    ! grep -Fq "make check" "$HOSTED_ANDROID_PLAN" || \
    ! grep -Fq "OldTargetApi" "$HOSTED_ANDROID_PLAN" || \
-   ! grep -Fq "Exact-head pull-request workflow pending" "$HOSTED_ANDROID_PLAN"; then
-  printf '%s\n' "Hosted battery verification plan must record completed local evidence and pending hosted evidence." >&2
+   ! grep -Fq 'GitHub Actions `pull_request` run `27401524940` passed' "$HOSTED_ANDROID_PLAN" || \
+   ! grep -Fq "b9a9611d39b80a690ba2cb3f022d23851c34241c" "$HOSTED_ANDROID_PLAN"; then
+  printf '%s\n' "Hosted battery verification plan must record completed local and hosted evidence." >&2
   exit 1
 fi
 

@@ -1,6 +1,6 @@
 # Hosted Android Verification
 
-## Status: Implementation Complete; Hosted Verification Pending
+## Status: Completed
 
 ## Context
 
@@ -42,7 +42,9 @@ pushes instead of skipping every hosted Gradle task.
   cruncher failure on implementation commit
   `f489fa5908274063eed8a80f91e5c2db0214a112`; fixed-head verification pending.
 - Passed `git diff --check`.
-- Exact-head pull-request workflow pending after the implementation push.
+- GitHub Actions `pull_request` run `27401524940` passed the complete hosted
+  Android gate in 47 seconds for fixed implementation commit
+  `b9a9611d39b80a690ba2cb3f022d23851c34241c`.
 
 ## Boundaries
 
