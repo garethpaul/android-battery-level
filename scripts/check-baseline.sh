@@ -18,6 +18,7 @@ BACKUP_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-backup-policy.md"
 CURRENT_PREFIX_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-current-prefix-parsing.md"
 INTENT_NULL_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-intent-null-guards.md"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
+LEVEL_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-12-battery-level-unavailable-display.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 
 if grep -A3 "public void onPause()" "$MAIN_ACTIVITY" | grep -Fq "setup();"; then
@@ -82,6 +83,38 @@ fi
 
 if ! grep -Fq "Math.max(0, Math.min(100, percent));" "$MAIN_ACTIVITY"; then
   printf '%s\n' "Battery level percentages must be clamped to 0 through 100." >&2
+  exit 1
+fi
+
+LEVEL_FORMATTER=$(sed -n \
+  '/private static String batteryLevelText(int levelPercent)/,/private static String batteryStatusText/p' \
+  "$MAIN_ACTIVITY")
+
+if ! grep -Fq "levelText.setText(batteryLevelText(level));" "$MAIN_ACTIVITY"; then
+  printf '%s\n' "Battery level text must use the unavailable-data formatter." >&2
+  exit 1
+fi
+
+for level_display_contract in \
+  "private static String batteryLevelText(int levelPercent)" \
+  "if (levelPercent < 0)" \
+  'return "Unknown";' \
+  "return String.valueOf(levelPercent);"; do
+  if ! printf '%s\n' "$LEVEL_FORMATTER" | grep -Fq "$level_display_contract"; then
+    printf '%s\n' "Battery level unavailable display must keep contract: $level_display_contract" >&2
+    exit 1
+  fi
+done
+
+if grep -Fq "levelText.setText(String.valueOf(level));" "$MAIN_ACTIVITY"; then
+  printf '%s\n' "Battery level text must not expose the internal unavailable sentinel." >&2
+  exit 1
+fi
+
+if [ ! -f "$LEVEL_DISPLAY_PLAN" ] || \
+   ! grep -Fq "Status: Completed" "$LEVEL_DISPLAY_PLAN" || \
+   ! grep -Fq "make check" "$LEVEL_DISPLAY_PLAN"; then
+  printf '%s\n' "Battery level unavailable display plan must record completed make check verification." >&2
   exit 1
 fi
 
