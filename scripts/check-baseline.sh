@@ -260,6 +260,12 @@ if ! grep -Fq 'buildToolsVersion "24.0.3"' "$ROOT_DIR/app/build.gradle"; then
   exit 1
 fi
 
+if ! grep -Fq "aaptOptions {" "$ROOT_DIR/app/build.gradle" || \
+   ! grep -Fq "useNewCruncher false" "$ROOT_DIR/app/build.gradle"; then
+  printf '%s\n' "Legacy Android builds must avoid the nondeterministic queued PNG cruncher." >&2
+  exit 1
+fi
+
 if ! grep -Fq "Android build-tools 24.0.3" "$ROOT_DIR/README.md"; then
   printf '%s\n' "README must document the pinned Android build-tools version." >&2
   exit 1

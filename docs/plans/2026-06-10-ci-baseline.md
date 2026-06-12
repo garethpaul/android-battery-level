@@ -23,6 +23,8 @@ contracts are checked before review.
   repository reads, and bounded the job to 15 minutes.
 - Install Android API 22 and build-tools 24.0.3, select Java 8, and run the
   complete `make check` gate including lint, unit tests, and debug assembly.
+- Use the legacy non-queued PNG cruncher to avoid AGP 1.1 `QueuedCruncher`
+  failures observed on clean hosted builds while preserving aapt validation.
 - Extended `scripts/check-baseline.sh` to require the CI workflow and this
   completed plan.
 - Disabled persisted checkout credentials and replaced partial string matching

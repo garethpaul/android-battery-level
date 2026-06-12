@@ -84,6 +84,8 @@ source review first, then rely on the hosted matching platform toolchain.
 
 - No required secret or credential file was identified in the repository scan. If you add integrations later, keep secrets out of git.
 - The legacy Android build is pinned to Android build-tools 24.0.3 for this baseline.
+- The legacy Android plugin uses its non-queued PNG cruncher because the newer
+  concurrent cruncher can fail nondeterministically on clean hosted builds.
 - Battery voltage is read from Android in millivolts and displayed as volts
   with one decimal place.
 - Battery current uses `Unknown` when the device has no supported current
