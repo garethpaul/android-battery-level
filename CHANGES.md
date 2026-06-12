@@ -1,5 +1,14 @@
 # Changes
 
+## 2026-06-12
+
+- Regenerated the Gradle wrapper bootstrap with official Gradle 8.14.5 tooling
+  while retaining the legacy Gradle 2.2.1 Android build runtime.
+- Pinned Gradle's published SHA-256 for the 2.2.1 all distribution and added
+  SDK-free contracts for the wrapper properties, JAR, and generated launchers.
+- Documented the authenticated-download boundary without claiming offline
+  reproducibility or broad Android build modernization.
+
 ## 2026-06-10
 
 - Added explicit missing/sentinel guards for receiver and displayed battery
@@ -14,6 +23,9 @@
 - Extended the SDK-free baseline to require the CI workflow and completed CI
   plan.
 - Removed the maintainer-specific Android SDK path from the Makefile.
+- Disabled persisted checkout credentials, assigned CODEOWNERS and CI policy
+  files to the repository owner, and replaced substring checks with one
+  canonical workflow contract.
 
 ## 2026-06-09
 
