@@ -1,6 +1,6 @@
 # Battery Plugged Unavailable Display
 
-Status: Planned
+Status: Completed
 
 ## Priority
 
@@ -61,7 +61,19 @@ than being presented as unplugged.
 
 ## Verification
 
-Pending implementation and execution.
+- `ANDROID_HOME=/home/gjones/android-sdk ANDROID_SDK_ROOT=/home/gjones/android-sdk make check`
+  passed in an isolated repository copy after provisionally marking this plan
+  completed. The gate ran the SDK-free baseline, Android lint, debug and
+  release unit tests, and debug APK assembly. Lint reported only the documented
+  legacy `OldTargetApi` compatibility warning.
+- Eight hostile mutations were rejected: removal of the explicit zero case,
+  restoration of the ambiguous default, drift of the unavailable sentinel,
+  USB/wireless mapping drift, removed guidance, and rolled-back plan status or
+  mutation evidence.
+- Canonical and external-directory `make check` both passed against the exact
+  completed implementation with the configured Android SDK. Each run covered
+  the SDK-free baseline, Android lint, debug and release unit tests, and debug
+  APK assembly with only the documented `OldTargetApi` lint warning.
 
 ## Sources
 

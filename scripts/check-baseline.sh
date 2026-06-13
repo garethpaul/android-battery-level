@@ -20,6 +20,7 @@ CURRENT_PREFIX_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-current-prefix-pars
 INTENT_NULL_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-intent-null-guards.md"
 LEVEL_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-12-battery-level-unavailable-display.md"
 READER_LOG_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-reader-log-redaction.md"
+PLUGGED_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-plugged-unavailable-display.md"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
 HOSTED_ANDROID_PLAN="$ROOT_DIR/docs/plans/2026-06-12-hosted-android-verification.md"
 WRAPPER_PLAN="$ROOT_DIR/docs/plans/2026-06-12-gradle-wrapper-verification.md"
@@ -485,6 +486,32 @@ for pattern in \
   fi
 done
 
+plugged_method=$(sed -n \
+  '/private static String batteryPluggedText(int chargePlug)/,/^    }/p' \
+  "$MAIN_ACTIVITY")
+plugged_compact=$(printf '%s\n' "$plugged_method" | tr -d '[:space:]')
+for plugged_contract in \
+  'caseBatteryManager.BATTERY_PLUGGED_AC:return"ACCharging";' \
+  'caseBatteryManager.BATTERY_PLUGGED_USB:return"USBCharging";' \
+  'caseBatteryManager.BATTERY_PLUGGED_WIRELESS:return"WirelessCharging";' \
+  'case0:return"OnBattery";' \
+  'default:return"Unknown";'; do
+  if ! printf '%s\n' "$plugged_compact" | grep -Fq "$plugged_contract"; then
+    printf '%s\n' "Battery plugged-state display must keep contract: $plugged_contract" >&2
+    exit 1
+  fi
+done
+
+if ! grep -Fq "BatteryManager.EXTRA_PLUGGED, -1" "$MAIN_ACTIVITY"; then
+  printf '%s\n' "Missing plugged-state data must keep the unavailable sentinel." >&2
+  exit 1
+fi
+
+if printf '%s\n' "$plugged_method" | sed -n '/default:/,$p' | grep -Fq 'return "On Battery";'; then
+  printf '%s\n' "The plugged-state default must not report unavailable data as on battery." >&2
+  exit 1
+fi
+
 if [ -f "$ROOT_DIR/app/src/main/res/menu/menu_main.xml" ]; then
   printf '%s\n' "Unused starter menu resource must not be restored." >&2
   exit 1
@@ -712,6 +739,22 @@ for reader_doc in "$README" "$SECURITY" "$CHANGES"; do
   if ! tr '\n' ' ' < "$reader_doc" | tr -s '[:space:]' ' ' | \
       grep -Fiq "generic battery reader failure logs"; then
     printf '%s\n' "$reader_doc must document generic battery reader failure logs." >&2
+    exit 1
+  fi
+done
+
+if [ ! -f "$PLUGGED_DISPLAY_PLAN" ] || \
+   ! grep -Fq "Status: Completed" "$PLUGGED_DISPLAY_PLAN" || \
+   ! grep -Fq "make check" "$PLUGGED_DISPLAY_PLAN" || \
+   ! grep -Fq "hostile mutations" "$PLUGGED_DISPLAY_PLAN"; then
+  printf '%s\n' "Battery plugged-state display plan must record completed verification." >&2
+  exit 1
+fi
+
+for plugged_doc in "$ROOT_DIR/AGENTS.md" "$README" "$SECURITY" "$VISION" "$CHANGES"; do
+  if ! tr '\n' ' ' < "$plugged_doc" | tr -s '[:space:]' ' ' | \
+      grep -Fiq "unavailable charging-source data"; then
+    printf '%s\n' "$plugged_doc must distinguish unavailable charging-source data." >&2
     exit 1
   fi
 done
