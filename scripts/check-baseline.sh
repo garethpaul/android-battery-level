@@ -21,6 +21,7 @@ INTENT_NULL_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-intent-null-guards.md"
 LEVEL_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-12-battery-level-unavailable-display.md"
 READER_LOG_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-reader-log-redaction.md"
 PLUGGED_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-plugged-unavailable-display.md"
+TECHNOLOGY_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-technology-normalization.md"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
 HOSTED_ANDROID_PLAN="$ROOT_DIR/docs/plans/2026-06-12-hosted-android-verification.md"
 WRAPPER_PLAN="$ROOT_DIR/docs/plans/2026-06-12-gradle-wrapper-verification.md"
@@ -463,8 +464,7 @@ for pattern in \
   "BatteryManager.BATTERY_STATUS_NOT_CHARGING" \
   "technologyText.setText(batteryTechnologyText(batteryStatus))" \
   "private static String batteryTechnologyText(Intent batteryStatus)" \
-  "BatteryManager.EXTRA_TECHNOLOGY" \
-  "technology == null || technology.length() == 0"; do
+  "BatteryManager.EXTRA_TECHNOLOGY"; do
   if ! grep -Fq "$pattern" "$MAIN_ACTIVITY"; then
     printf '%s\n' "Missing battery status/technology display contract: $pattern" >&2
     exit 1
@@ -473,6 +473,27 @@ done
 
 if ! grep -A6 "private static String batteryTechnologyText(Intent batteryStatus)" "$MAIN_ACTIVITY" | grep -Fq "if (batteryStatus == null)"; then
   printf '%s\n' "Battery technology display helper must tolerate missing battery intents." >&2
+  exit 1
+fi
+
+technology_method=$(sed -n \
+  '/private static String batteryTechnologyText(Intent batteryStatus)/,/^    }/p' \
+  "$MAIN_ACTIVITY")
+technology_compact=$(printf '%s\n' "$technology_method" | tr -d '[:space:]')
+for technology_contract in \
+  'Stringtechnology=batteryStatus.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY);' \
+  'if(technology==null){return"Unknown";}' \
+  'StringnormalizedTechnology=technology.trim();' \
+  'if(normalizedTechnology.length()==0){return"Unknown";}' \
+  'returnnormalizedTechnology;'; do
+  if ! printf '%s\n' "$technology_compact" | grep -Fq "$technology_contract"; then
+    printf '%s\n' "Battery technology display must keep normalized contract: $technology_contract" >&2
+    exit 1
+  fi
+done
+
+if printf '%s\n' "$technology_compact" | grep -Fq 'returntechnology;'; then
+  printf '%s\n' "Battery technology display must not return the unnormalized value." >&2
   exit 1
 fi
 
@@ -755,6 +776,26 @@ for plugged_doc in "$ROOT_DIR/AGENTS.md" "$README" "$SECURITY" "$VISION" "$CHANG
   if ! tr '\n' ' ' < "$plugged_doc" | tr -s '[:space:]' ' ' | \
       grep -Fiq "unavailable charging-source data"; then
     printf '%s\n' "$plugged_doc must distinguish unavailable charging-source data." >&2
+    exit 1
+  fi
+done
+
+if [ ! -f "$TECHNOLOGY_DISPLAY_PLAN" ] || \
+   ! grep -Fq "status: completed" "$TECHNOLOGY_DISPLAY_PLAN" || \
+   ! grep -Fq "## Verification Completed" "$TECHNOLOGY_DISPLAY_PLAN" || \
+   ! grep -Fq "make check" "$TECHNOLOGY_DISPLAY_PLAN" || \
+   ! grep -Fq "Six focused hostile mutations" "$TECHNOLOGY_DISPLAY_PLAN" || \
+   ! grep -Fq "generated-artifact and credential-shaped" "$TECHNOLOGY_DISPLAY_PLAN"; then
+  printf '%s\n' "Battery technology normalization plan must record completed verification." >&2
+  exit 1
+fi
+
+for technology_doc in "$README" "$SECURITY" "$VISION" "$CHANGES"; do
+  normalized_technology_doc=$(tr '\n' ' ' < "$technology_doc" | tr -s '[:space:]' ' ')
+  if ! printf '%s\n' "$normalized_technology_doc" | grep -Fiq "technology" || \
+     ! printf '%s\n' "$normalized_technology_doc" | grep -Fiq "trim" || \
+     ! printf '%s\n' "$normalized_technology_doc" | grep -Fiq "whitespace"; then
+    printf '%s\n' "$technology_doc must document trimmed technology and whitespace fallback behavior." >&2
     exit 1
   fi
 done

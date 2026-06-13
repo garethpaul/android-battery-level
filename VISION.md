@@ -22,6 +22,8 @@ Priority:
 - Maintain an SDK-free baseline check for quick verification
 - Keep displayed battery values clear and traceable to Android system inputs
 - Keep state and technology fields populated from battery broadcast extras
+- Keep battery technology labels trimmed with an `Unknown` fallback for
+  whitespace-only values
 - Keep unavailable charging-source data distinct from a confirmed unplugged
   state
 - Keep sticky battery intent helper paths safe when broadcasts are unavailable

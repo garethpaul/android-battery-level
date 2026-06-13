@@ -194,11 +194,16 @@ public class MainActivity extends Activity implements mBatInfoReceiver.Temperatu
         }
 
         String technology = batteryStatus.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY);
-        if (technology == null || technology.length() == 0) {
+        if (technology == null) {
             return "Unknown";
         }
 
-        return technology;
+        String normalizedTechnology = technology.trim();
+        if (normalizedTechnology.length() == 0) {
+            return "Unknown";
+        }
+
+        return normalizedTechnology;
     }
 
     private void registerBatteryReceiver() {
