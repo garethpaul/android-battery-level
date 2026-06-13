@@ -43,6 +43,8 @@ Helpful reports include:
   receives an explicit least-privilege security contract.
 - Battery intent helper paths should tolerate unavailable contexts or broadcasts
   and display fallback values without crashing the local diagnostic UI.
+- Generic battery reader failure logs preserve read and parse categories without
+  including exception messages, kernel paths, malformed values, or stack traces.
 
 ## Mobile Privacy Notes
 
