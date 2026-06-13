@@ -45,6 +45,8 @@ Helpful reports include:
   and display fallback values without crashing the local diagnostic UI.
 - Generic battery reader failure logs preserve read and parse categories without
   including exception messages, kernel paths, malformed values, or stack traces.
+- Unavailable charging-source data remains `Unknown` instead of being reported
+  as a confirmed unplugged state.
 
 ## Mobile Privacy Notes
 

@@ -2,6 +2,10 @@
 
 ## 2026-06-13
 
+- Distinguished unavailable charging-source data from the explicit unplugged
+  state while preserving AC, USB, and wireless labels.
+- Added completed-plan, documentation, and hostile-mutation contracts for the
+  plugged-state display mapping.
 - Replaced exception-derived battery text-reader logs with generic battery
   reader failure logs.
 - Added exact log-count, stack-redaction, documentation, and completed-plan

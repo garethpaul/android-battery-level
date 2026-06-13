@@ -53,6 +53,8 @@
 - Battery level percentages are normalized against Android's reported scale and clamped to 0 through 100 before display.
 - Android's unavailable battery-level sentinel remains internal; the UI displays
   `Unknown` and uses the neutral battery icon instead of exposing `-1`.
+- Unavailable charging-source data displays as `Unknown`; only Android's
+  explicit zero value is presented as `On Battery`.
 
 ## Agent workflow
 

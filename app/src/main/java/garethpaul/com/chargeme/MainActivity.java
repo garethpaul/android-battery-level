@@ -181,8 +181,10 @@ public class MainActivity extends Activity implements mBatInfoReceiver.Temperatu
                 return "USB Charging";
             case BatteryManager.BATTERY_PLUGGED_WIRELESS:
                 return "Wireless Charging";
-            default:
+            case 0:
                 return "On Battery";
+            default:
+                return "Unknown";
         }
     }
 
