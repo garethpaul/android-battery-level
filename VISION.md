@@ -29,6 +29,8 @@ Priority:
 - Keep sticky battery intent helper paths safe when broadcasts are unavailable
 - Keep receiver-backed temperature reads null-safe and one-decimal accurate
 - Keep visible temperature synchronized with valid live battery broadcasts
+- Refresh the full battery display from each live broadcast while the activity
+  remains visible
 - Distinguish unavailable temperature data from a real zero-degree reading
 - Keep normalized battery percentages clamped to the user-visible display range
 - Keep displayed battery units converted before presentation

@@ -10,15 +10,15 @@ import android.os.BatteryManager;
  */
 public class mBatInfoReceiver extends BroadcastReceiver {
 
-    public interface TemperatureListener {
-        void onTemperatureChanged(int temperatureTenths);
+    public interface BatteryStatusListener {
+        void onBatteryStatusChanged(Intent batteryStatus);
     }
 
     int temp = 0;
-    private final TemperatureListener temperatureListener;
+    private final BatteryStatusListener batteryStatusListener;
 
-    public mBatInfoReceiver(TemperatureListener temperatureListener) {
-        this.temperatureListener = temperatureListener;
+    public mBatInfoReceiver(BatteryStatusListener batteryStatusListener) {
+        this.batteryStatusListener = batteryStatusListener;
     }
 
     float get_temp(){
@@ -31,6 +31,10 @@ public class mBatInfoReceiver extends BroadcastReceiver {
             return;
         }
 
+        if (batteryStatusListener != null) {
+            batteryStatusListener.onBatteryStatusChanged(intent);
+        }
+
         if (!intent.hasExtra(BatteryManager.EXTRA_TEMPERATURE)) {
             return;
         }
@@ -40,9 +44,6 @@ public class mBatInfoReceiver extends BroadcastReceiver {
                 Integer.MIN_VALUE);
         if (receivedTemperature != Integer.MIN_VALUE) {
             temp = receivedTemperature;
-            if (temperatureListener != null) {
-                temperatureListener.onTemperatureChanged(receivedTemperature);
-            }
         }
 
     }
