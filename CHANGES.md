@@ -2,6 +2,8 @@
 
 ## 2026-06-13
 
+- Trimmed battery technology labels before display and retained `Unknown` for
+  values that contain only whitespace.
 - Distinguished unavailable charging-source data from the explicit unplugged
   state while preserving AC, USB, and wireless labels.
 - Added completed-plan, documentation, and hostile-mutation contracts for the

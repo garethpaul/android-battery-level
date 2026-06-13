@@ -47,6 +47,8 @@ Helpful reports include:
   including exception messages, kernel paths, malformed values, or stack traces.
 - Unavailable charging-source data remains `Unknown` instead of being reported
   as a confirmed unplugged state.
+- Battery technology labels are trimmed before display so whitespace-only
+  system values retain the `Unknown` fallback instead of rendering blank.
 
 ## Mobile Privacy Notes
 

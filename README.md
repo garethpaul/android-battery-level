@@ -109,8 +109,9 @@ source review first, then rely on the hosted matching platform toolchain.
   displayed as `Unknown` instead of exposing the internal `-1` sentinel.
 - Battery state, charging source, health, and technology display text are
   derived from Android battery broadcast extras, with `Unknown` fallbacks for
-  missing fields. Unavailable charging-source data remains `Unknown`; only the
-  explicit unplugged value is displayed as `On Battery`.
+  missing fields. Technology values are trimmed before display, and values
+  containing only whitespace use `Unknown`. Unavailable charging-source data
+  remains `Unknown`; only the explicit unplugged value is displayed as `On Battery`.
 - Sticky battery intent helper paths tolerate missing contexts or broadcasts
   and keep display helpers on `Unknown` fallbacks instead of crashing.
 - Battery receiver temperature updates ignore missing broadcast intents and
