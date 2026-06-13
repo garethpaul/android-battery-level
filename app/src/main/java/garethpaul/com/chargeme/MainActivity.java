@@ -14,7 +14,7 @@ import android.widget.TextView;
 import java.util.Locale;
 
 
-public class MainActivity extends Activity implements mBatInfoReceiver.TemperatureListener{
+public class MainActivity extends Activity implements mBatInfoReceiver.BatteryStatusListener{
     private mBatInfoReceiver myBatInfoReceiver;
     private boolean batteryReceiverRegistered;
     private int level;
@@ -58,8 +58,10 @@ public class MainActivity extends Activity implements mBatInfoReceiver.Temperatu
 
     private void setup() {
         registerBatteryReceiver();
+        renderBatteryStatus(batteryStatusIntent(this));
+    }
 
-        Intent batteryStatus = batteryStatusIntent(this);
+    private void renderBatteryStatus(Intent batteryStatus) {
         if (batteryStatus == null) {
             return;
         }
@@ -103,10 +105,11 @@ public class MainActivity extends Activity implements mBatInfoReceiver.Temperatu
         }
 
         TextView batteryTemp = (TextView) findViewById(R.id.temperature);
-        batteryTemp.setText(batteryTemperature(this));
+        batteryTemp.setText(batteryTemperatureText(batteryStatus));
 
         TextView voltageText = (TextView) findViewById(R.id.voltage);
-        voltageText.setText(batteryVoltageText(getVoltage()));
+        voltageText.setText(batteryVoltageText(
+                batteryStatus.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1)));
 
         TextView modelText = (TextView) findViewById(R.id.model);
         modelText.setText(getDeviceName());
@@ -256,11 +259,8 @@ public class MainActivity extends Activity implements mBatInfoReceiver.Temperatu
     }
 
     @Override
-    public void onTemperatureChanged(int temperatureTenths) {
-        TextView batteryTemp = (TextView) findViewById(R.id.temperature);
-        if (batteryTemp != null) {
-            batteryTemp.setText(batteryTemperatureText(temperatureTenths));
-        }
+    public void onBatteryStatusChanged(Intent batteryStatus) {
+        renderBatteryStatus(batteryStatus);
     }
 
     private static String batteryTemperatureText(Intent intent) {

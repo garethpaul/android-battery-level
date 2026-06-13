@@ -114,10 +114,10 @@ source review first, then rely on the hosted matching platform toolchain.
   remains `Unknown`; only the explicit unplugged value is displayed as `On Battery`.
 - Sticky battery intent helper paths tolerate missing contexts or broadcasts
   and keep display helpers on `Unknown` fallbacks instead of crashing.
-- Battery receiver temperature updates ignore missing broadcast intents and
-  missing temperature extras, preserve the previous valid receiver value, and
-  reject invalid sentinels. Valid broadcasts immediately refresh the visible
-  temperature through the activity listener.
+- Battery receiver updates ignore missing broadcast intents, refresh the full
+  battery display from each live broadcast, preserve the previous valid
+  receiver temperature when its extra is absent, and reject invalid
+  temperature sentinels.
 - Battery temperature display uses `Unknown` when the sticky broadcast omits
   temperature data and formats valid tenths as one-decimal Celsius values.
 - The activity guards nullable action-bar access before applying the battery

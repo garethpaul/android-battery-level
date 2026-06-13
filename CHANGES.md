@@ -2,6 +2,10 @@
 
 ## 2026-06-13
 
+- Refreshed the full battery display from each live broadcast instead of
+  updating only temperature until the next activity setup cycle.
+- Rendered temperature, voltage, and the other intent-backed rows from the same
+  broadcast snapshot while preserving existing formatters and fallbacks.
 - Trimmed battery technology labels before display and retained `Unknown` for
   values that contain only whitespace.
 - Distinguished unavailable charging-source data from the explicit unplugged

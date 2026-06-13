@@ -22,6 +22,7 @@ LEVEL_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-12-battery-level-unavailable-di
 READER_LOG_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-reader-log-redaction.md"
 PLUGGED_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-plugged-unavailable-display.md"
 TECHNOLOGY_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-technology-normalization.md"
+LIVE_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-live-status-refresh.md"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
 HOSTED_ANDROID_PLAN="$ROOT_DIR/docs/plans/2026-06-12-hosted-android-verification.md"
 WRAPPER_PLAN="$ROOT_DIR/docs/plans/2026-06-12-gradle-wrapper-verification.md"
@@ -433,7 +434,7 @@ if grep -Fq "String.valueOf(CurrentReader.getValue())" "$MAIN_ACTIVITY"; then
 fi
 
 for pattern in \
-  "batteryVoltageText(getVoltage())" \
+  "batteryStatus.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1)" \
   "private static String batteryVoltageText(int millivolts)" \
   "String.format(Locale.US, \"%.1fV\", millivolts / 1000.0f)" \
   "return \"Unknown\";"; do
@@ -657,22 +658,72 @@ if ! grep -Fq "receivedTemperature != Integer.MIN_VALUE" "$BAT_INFO_RECEIVER"; t
   exit 1
 fi
 
-for live_temperature_contract in \
-  "interface TemperatureListener" \
-  "temperatureListener.onTemperatureChanged(receivedTemperature);"; do
-  if ! grep -Fq "$live_temperature_contract" "$BAT_INFO_RECEIVER"; then
-    printf '%s\n' "Battery receiver live updates must keep contract: $live_temperature_contract" >&2
+for live_status_contract in \
+  "interface BatteryStatusListener" \
+  "batteryStatusListener.onBatteryStatusChanged(intent);"; do
+  if ! grep -Fq "$live_status_contract" "$BAT_INFO_RECEIVER"; then
+    printf '%s\n' "Battery receiver live updates must keep contract: $live_status_contract" >&2
     exit 1
   fi
 done
 
-for activity_temperature_contract in \
-  "implements mBatInfoReceiver.TemperatureListener" \
+if ! awk '
+  /public void onReceive\(Context arg0, Intent intent\)/ { in_receive = 1 }
+  in_receive && /batteryStatusListener\.onBatteryStatusChanged\(intent\);/ { callback = NR }
+  in_receive && /!intent\.hasExtra\(BatteryManager\.EXTRA_TEMPERATURE\)/ { temperature_guard = NR }
+  END { exit !(callback && temperature_guard && callback < temperature_guard) }
+' "$BAT_INFO_RECEIVER"; then
+  printf '%s\n' "Battery receiver must deliver full status before applying temperature-only guards." >&2
+  exit 1
+fi
+
+for activity_status_contract in \
+  "implements mBatInfoReceiver.BatteryStatusListener" \
   "new mBatInfoReceiver(this)" \
-  "public void onTemperatureChanged(int temperatureTenths)" \
-  "batteryTemp.setText(batteryTemperatureText(temperatureTenths));"; do
-  if ! grep -Fq "$activity_temperature_contract" "$MAIN_ACTIVITY"; then
-    printf '%s\n' "Battery activity live updates must keep contract: $activity_temperature_contract" >&2
+  "private void renderBatteryStatus(Intent batteryStatus)" \
+  "public void onBatteryStatusChanged(Intent batteryStatus)" \
+  "renderBatteryStatus(batteryStatus);"; do
+  if ! grep -Fq "$activity_status_contract" "$MAIN_ACTIVITY"; then
+    printf '%s\n' "Battery activity live status updates must keep contract: $activity_status_contract" >&2
+    exit 1
+  fi
+done
+
+if ! awk '
+  /private void setup\(\)/ { in_setup = 1 }
+  /private void renderBatteryStatus\(Intent batteryStatus\)/ { in_setup = 0; in_render = 1 }
+  /private static Intent batteryStatusIntent\(Context context\)/ { in_render = 0 }
+  in_setup && /registerBatteryReceiver\(\);/ { register_receiver = NR }
+  in_setup && /renderBatteryStatus\(batteryStatusIntent\(this\)\);/ { initial_render = NR }
+  in_render && /batteryLevelPercent\(batteryStatus\)/ { level = NR }
+  in_render && /BatteryManager.EXTRA_STATUS/ { status = NR }
+  in_render && /BatteryManager.EXTRA_HEALTH/ { health = NR }
+  in_render && /BatteryManager.EXTRA_PLUGGED/ { plugged = NR }
+  in_render && /batteryTemperatureText\(batteryStatus\)/ { temperature = NR }
+  in_render && /BatteryManager.EXTRA_VOLTAGE/ { voltage = NR }
+  in_render && /batteryTechnologyText\(batteryStatus\)/ { technology = NR }
+  END {
+    exit !(register_receiver && initial_render && register_receiver < initial_render &&
+      level && status && health && plugged && temperature && voltage && technology)
+  }
+' "$MAIN_ACTIVITY"; then
+  printf '%s\n' "Battery broadcasts must render all intent-backed fields from the supplied status intent." >&2
+  exit 1
+fi
+
+if [ ! -f "$LIVE_STATUS_PLAN" ] || \
+   ! grep -Fq "status: completed" "$LIVE_STATUS_PLAN" || \
+   ! grep -Fq "## Verification Completed" "$LIVE_STATUS_PLAN" || \
+   ! grep -Fq "make check" "$LIVE_STATUS_PLAN" || \
+   ! grep -Fq "hostile mutations" "$LIVE_STATUS_PLAN"; then
+  printf '%s\n' "Battery live-status plan must record completed verification." >&2
+  exit 1
+fi
+
+for live_status_doc in "$README" "$SECURITY" "$VISION" "$CHANGES"; do
+  if ! tr '\n' ' ' < "$live_status_doc" | tr -s '[:space:]' ' ' | \
+      grep -Fiq "full battery display from each live broadcast"; then
+    printf '%s\n' "$live_status_doc must document full live battery refreshes." >&2
     exit 1
   fi
 done

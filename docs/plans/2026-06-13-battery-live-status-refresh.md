@@ -1,6 +1,6 @@
 # Refresh The Full Battery Display From Broadcasts
 
-status: planned
+status: completed
 
 ## Context
 
@@ -37,3 +37,24 @@ stale until another activity setup cycle.
 - `git diff --check`, artifact, conflict-marker, and credential-shaped
   added-line inspection.
 - Exact-head hosted Android validation after push.
+
+## Work Completed
+
+- Replaced the temperature-only receiver callback with a full battery-status
+  callback while preserving the validated temperature cache.
+- Centralized visible battery rendering around one supplied broadcast intent.
+- Rendered temperature and voltage from the same snapshot as level, status,
+  health, charging source, and technology.
+- Added method-bounded static contracts and updated user, security, vision, and
+  change guidance.
+
+## Verification Completed
+
+- `sh -n scripts/check-baseline.sh` passed.
+- Local `make check` and external-working-directory `make -C` execution passed
+  all SDK-free contracts. Android lint, tests, and build truthfully skipped
+  because no Android SDK is configured locally.
+- Nine focused hostile mutations were rejected: callback forwarding, callback
+  ordering before temperature-only guards, renderer delegation, same-intent
+  temperature, same-intent voltage, health rendering, lifecycle cleanup,
+  README guidance, and plan-status rollback.

@@ -49,6 +49,9 @@ Helpful reports include:
   as a confirmed unplugged state.
 - Battery technology labels are trimmed before display so whitespace-only
   system values retain the `Unknown` fallback instead of rendering blank.
+- Refresh the full battery display from each live broadcast so diagnostic
+  decisions do not rely on stale level, state, health, charging-source,
+  voltage, temperature, or technology rows.
 
 ## Mobile Privacy Notes
 
