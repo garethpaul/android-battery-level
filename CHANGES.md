@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-06-13
+
+- Replaced exception-derived battery text-reader logs with generic battery
+  reader failure logs.
+- Added exact log-count, stack-redaction, documentation, and completed-plan
+  contracts while preserving nullable current behavior.
+
 ## 2026-06-12
 
 - Regenerated the Gradle wrapper bootstrap with official Gradle 8.14.5 tooling

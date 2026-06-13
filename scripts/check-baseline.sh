@@ -5,6 +5,7 @@ ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 MAIN_ACTIVITY="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/MainActivity.java"
 BAT_INFO_RECEIVER="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/mBatInfoReceiver.java"
 CURRENT_READER="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/CurrentReader.java"
+ONE_LINE_READER="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/OneLineReader.java"
 SMEM_TEXT_READER="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/SMemTextReader.java"
 BATT_ATTR_TEXT_READER="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/BattAttrTextReader.java"
 LAYOUT="$ROOT_DIR/app/src/main/res/layout/activity_main.xml"
@@ -18,6 +19,7 @@ BACKUP_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-backup-policy.md"
 CURRENT_PREFIX_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-current-prefix-parsing.md"
 INTENT_NULL_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-intent-null-guards.md"
 LEVEL_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-12-battery-level-unavailable-display.md"
+READER_LOG_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-reader-log-redaction.md"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
 HOSTED_ANDROID_PLAN="$ROOT_DIR/docs/plans/2026-06-12-hosted-android-verification.md"
 WRAPPER_PLAN="$ROOT_DIR/docs/plans/2026-06-12-gradle-wrapper-verification.md"
@@ -667,5 +669,51 @@ if ! grep -Fq "Status: Completed" "$ROOT_DIR/docs/plans/2026-06-10-battery-live-
   printf '%s\n' "Battery live-temperature plan must record completed status and make check verification." >&2
   exit 1
 fi
+
+if [ "$(grep -Fc 'Log.e("CurrentWidget"' "$BATT_ATTR_TEXT_READER" || true)" -ne 3 ] || \
+   [ "$(grep -Fc 'Log.e("CurrentWidget"' "$ONE_LINE_READER" || true)" -ne 2 ] || \
+   [ "$(grep -Fc 'Log.e("CurrentWidget"' "$SMEM_TEXT_READER" || true)" -ne 2 ]; then
+  printf '%s\n' "Battery text readers must keep exactly seven reviewed generic error logs." >&2
+  exit 1
+fi
+invalid_current_count=$((
+  $(grep -Fc '"invalid battery current value"' "$ONE_LINE_READER" || true) +
+  $(grep -Fc '"invalid battery current value"' "$SMEM_TEXT_READER" || true)
+))
+current_read_count=$((
+  $(grep -Fc '"battery current read failed"' "$ONE_LINE_READER" || true) +
+  $(grep -Fc '"battery current read failed"' "$SMEM_TEXT_READER" || true)
+))
+if [ "$(grep -Fc '"invalid battery attribute value"' "$BATT_ATTR_TEXT_READER" || true)" -ne 2 ] || \
+   [ "$(grep -Fc '"battery attribute read failed"' "$BATT_ATTR_TEXT_READER" || true)" -ne 1 ] || \
+   [ "$invalid_current_count" -ne 2 ] || \
+   [ "$current_read_count" -ne 2 ]; then
+  printf '%s\n' "Battery text readers must keep exact generic read and parse categories." >&2
+  exit 1
+fi
+for reader in "$BATT_ATTR_TEXT_READER" "$ONE_LINE_READER" "$SMEM_TEXT_READER"; do
+  for sensitive_log in "getMessage()" "printStackTrace()" "Log.getStackTraceString" ", ex);" ", nfe);"; do
+    if grep -Fq "$sensitive_log" "$reader"; then
+      printf '%s\n' "$reader must not log exception-derived battery reader details: $sensitive_log" >&2
+      exit 1
+    fi
+  done
+done
+
+if [ ! -f "$READER_LOG_PLAN" ] || \
+   ! grep -Fq "Status: Completed" "$READER_LOG_PLAN" || \
+   ! grep -Fq "make check" "$READER_LOG_PLAN" || \
+   ! grep -Fq "hostile mutations" "$READER_LOG_PLAN"; then
+  printf '%s\n' "Battery reader log-redaction plan must record completed verification." >&2
+  exit 1
+fi
+
+for reader_doc in "$README" "$SECURITY" "$CHANGES"; do
+  if ! tr '\n' ' ' < "$reader_doc" | tr -s '[:space:]' ' ' | \
+      grep -Fiq "generic battery reader failure logs"; then
+    printf '%s\n' "$reader_doc must document generic battery reader failure logs." >&2
+    exit 1
+  fi
+done
 
 printf '%s\n' "Battery receiver lifecycle checks passed."

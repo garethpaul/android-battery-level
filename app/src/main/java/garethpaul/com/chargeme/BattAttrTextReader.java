@@ -57,7 +57,7 @@ public class BattAttrTextReader {
                             break;
                     }
                     catch (NumberFormatException nfe) {
-                        Log.e("CurrentWidget", nfe.getMessage(), nfe);
+                        Log.e("CurrentWidget", "invalid battery attribute value");
                     }
                 }
 
@@ -69,7 +69,7 @@ public class BattAttrTextReader {
                         value = (-1)*Math.abs(Long.parseLong(text));
                     }
                     catch (NumberFormatException nfe) {
-                        Log.e("CurrentWidget", nfe.getMessage(), nfe);
+                        Log.e("CurrentWidget", "invalid battery attribute value");
                     }
                     break;
                 }
@@ -82,7 +82,7 @@ public class BattAttrTextReader {
             fr.close();
         }
         catch (Exception ex) {
-            Log.e("CurrentWidget", ex.getMessage(), ex);
+            Log.e("CurrentWidget", "battery attribute read failed");
         }
 
 

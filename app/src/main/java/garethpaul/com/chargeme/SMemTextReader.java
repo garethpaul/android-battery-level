@@ -57,8 +57,7 @@ public class SMemTextReader {
             fr.close();
         }
         catch (Exception ex) {
-            Log.e("CurrentWidget", ex.getMessage());
-            ex.printStackTrace();
+            Log.e("CurrentWidget", "battery current read failed");
         }
 
         Long value = null;
@@ -71,7 +70,7 @@ public class SMemTextReader {
             }
             catch (NumberFormatException nfe)
             {
-                Log.e("CurrentWidget", nfe.getMessage());
+                Log.e("CurrentWidget", "invalid battery current value");
                 value = null;
             }
 

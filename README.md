@@ -100,6 +100,8 @@ source review first, then rely on the hosted matching platform toolchain.
   with one decimal place.
 - Battery current uses `Unknown` when the device has no supported current
   sensor file.
+- Generic battery reader failure logs retain read-versus-parse categories
+  without recording kernel paths, malformed sensor values, or stack traces.
 - Current text-file readers require exact field prefixes before parsing values
   from legacy kernel power-supply files.
 - Battery level percentages are normalized against Android's reported scale and
@@ -149,6 +151,8 @@ source review first, then rely on the hosted matching platform toolchain.
   percentage display range contract.
 - See `docs/plans/2026-06-12-battery-level-unavailable-display.md` for the
   unavailable battery-level display contract.
+- See `docs/plans/2026-06-13-battery-reader-log-redaction.md` for generic battery
+  reader failure logs and kernel-path redaction.
 - See `docs/plans/2026-06-09-battery-status-technology-display.md` for the
   battery state and technology display contract.
 - See `docs/plans/2026-06-09-battery-backup-policy.md` for the Android backup
