@@ -1,6 +1,6 @@
 # Battery Device Verification Checklist
 
-Status: In Progress
+Status: Completed
 
 ## Problem
 
@@ -25,4 +25,11 @@ checklist defines emulator/device evidence for real battery inputs.
 
 ## Verification
 
-- Pending implementation and bounded repository validation.
+- `sh -n scripts/check-baseline.sh` and the focused battery baseline checker
+  passed.
+- Repository-root and external-working-directory `make check` passed all
+  portable contracts and retained the existing bounded SDK behavior.
+- Twelve hostile mutations were rejected for removing checklist, level,
+  charging, current-source, reader, lifecycle, privacy, unexecuted-result,
+  documentation, or completed-plan evidence.
+- No Android SDK, emulator, physical-device, battery-state, or current-source scenario was executed; every runtime matrix row remains `not run`.

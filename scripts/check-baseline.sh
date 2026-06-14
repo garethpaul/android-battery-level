@@ -22,6 +22,7 @@ LEVEL_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-12-battery-level-unavailable-di
 READER_LOG_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-reader-log-redaction.md"
 CURRENT_FALLBACK_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-current-source-fallback.md"
 READER_FINALLY_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-reader-finally-cleanup.md"
+DEVICE_VERIFICATION_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-device-verification-checklist.md"
 PLUGGED_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-plugged-unavailable-display.md"
 TECHNOLOGY_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-technology-normalization.md"
 LIVE_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-live-status-refresh.md"
@@ -34,6 +35,51 @@ GRADLEW="$ROOT_DIR/gradlew"
 GRADLEW_BAT="$ROOT_DIR/gradlew.bat"
 WRAPPER_JAR="$ROOT_DIR/gradle/wrapper/gradle-wrapper.jar"
 WRAPPER_PROPERTIES="$ROOT_DIR/gradle/wrapper/gradle-wrapper.properties"
+
+for required_path in \
+  "$ROOT_DIR/DEVICE_VERIFICATION.md" \
+  "$DEVICE_VERIFICATION_PLAN"; do
+  if [ ! -f "$required_path" ]; then
+    printf '%s\n' "Required file is missing: ${required_path#"$ROOT_DIR/"}" >&2
+    exit 1
+  fi
+done
+
+for device_contract in \
+  'commit SHA and pull request' \
+  'Missing or invalid level' \
+  'Missing plugged extra' \
+  'Earlier source invalid' \
+  'Repeated refresh' \
+  'Rotate during updates' \
+  'Do not convert `not run` into passing evidence.' \
+  'sysfs paths, malformed sensor values' \
+  'every battery device and current-source row as' \
+  'unexecuted'; do
+  if ! grep -Fq "$device_contract" "$ROOT_DIR/DEVICE_VERIFICATION.md"; then
+    printf '%s\n' "Battery device checklist must keep contract: $device_contract" >&2
+    exit 1
+  fi
+done
+
+if ! grep -Fq 'DEVICE_VERIFICATION.md' "$README" || \
+   ! grep -Fq 'explicit unexecuted rows' "$README" || \
+   ! grep -Fqi 'battery device verification matrix' "$VISION" || \
+   ! grep -Fq 'every runtime row explicitly unexecuted' "$CHANGES"; then
+  printf '%s\n' 'Repository guidance must document the unexecuted battery device matrix.' >&2
+  exit 1
+fi
+
+for plan_contract in \
+  'Status: Completed' \
+  'make check' \
+  'hostile mutations' \
+  'No Android SDK, emulator, physical-device, battery-state, or current-source scenario was executed'; do
+  if ! grep -Fq "$plan_contract" "$DEVICE_VERIFICATION_PLAN"; then
+    printf '%s\n' "Battery device plan must keep completion evidence: $plan_contract" >&2
+    exit 1
+  fi
+done
 
 sha256_file() {
   if command -v sha256sum >/dev/null 2>&1; then
