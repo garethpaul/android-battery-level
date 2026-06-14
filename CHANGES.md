@@ -2,6 +2,8 @@
 
 ## 2026-06-14
 
+- Treated non-positive voltage readings as unavailable instead of displaying
+  a misleading `0.0V` value.
 - Continued probing later battery-current sysfs sources when an earlier
   existing file cannot produce a valid reading.
 - Ensured missing model metadata preserves generic current probes instead of

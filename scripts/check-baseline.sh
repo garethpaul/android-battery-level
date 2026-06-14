@@ -24,6 +24,7 @@ CURRENT_FALLBACK_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-current-source-fa
 READER_FINALLY_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-reader-finally-cleanup.md"
 DEVICE_VERIFICATION_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-device-verification-checklist.md"
 MODEL_FALLBACK_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-model-fallback.md"
+ZERO_VOLTAGE_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-zero-voltage-fallback.md"
 PLUGGED_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-plugged-unavailable-display.md"
 TECHNOLOGY_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-technology-normalization.md"
 LIVE_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-live-status-refresh.md"
@@ -40,7 +41,8 @@ WRAPPER_PROPERTIES="$ROOT_DIR/gradle/wrapper/gradle-wrapper.properties"
 for required_path in \
   "$ROOT_DIR/DEVICE_VERIFICATION.md" \
   "$DEVICE_VERIFICATION_PLAN" \
-  "$MODEL_FALLBACK_PLAN"; do
+  "$MODEL_FALLBACK_PLAN" \
+  "$ZERO_VOLTAGE_PLAN"; do
   if [ ! -f "$required_path" ]; then
     printf '%s\n' "Required file is missing: ${required_path#"$ROOT_DIR/"}" >&2
     exit 1
@@ -193,6 +195,33 @@ for pattern in \
   "BatteryManager.EXTRA_SCALE"; do
   if ! grep -Fq "$pattern" "$MAIN_ACTIVITY"; then
     printf '%s\n' "Missing lifecycle guard pattern: $pattern" >&2
+    exit 1
+  fi
+done
+
+if ! awk '
+  /private static String batteryVoltageText\(int millivolts\)/ { in_formatter = 1 }
+  in_formatter && /if \(millivolts <= 0\)/ { unavailable = NR }
+  in_formatter && !unknown && /return "Unknown";/ { unknown = NR }
+  in_formatter && /String\.format\(Locale\.US, "%.1fV", millivolts \/ 1000\.0f\)/ { format = NR }
+  END {
+    exit !(unavailable && unknown && format && unavailable < unknown && unknown < format)
+  }
+' "$MAIN_ACTIVITY"; then
+  printf '%s\n' "Battery voltage must treat non-positive readings as unavailable before formatting." >&2
+  exit 1
+fi
+
+for zero_voltage_document in "$README" "$SECURITY" "$VISION" "$CHANGES"; do
+  if ! grep -Fq "non-positive voltage" "$zero_voltage_document"; then
+    printf '%s\n' "$zero_voltage_document must document the non-positive voltage fallback." >&2
+    exit 1
+  fi
+done
+
+for zero_voltage_plan_contract in "Status: Completed" "make check" "mutations"; do
+  if ! grep -Fqi "$zero_voltage_plan_contract" "$ZERO_VOLTAGE_PLAN"; then
+    printf '%s\n' "Zero-voltage fallback plan must preserve completion evidence: $zero_voltage_plan_contract" >&2
     exit 1
   fi
 done

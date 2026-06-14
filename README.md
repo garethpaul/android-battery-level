@@ -102,7 +102,7 @@ privacy-safe evidence, and explicit unexecuted rows.
 - The legacy Android plugin uses its non-queued PNG cruncher because the newer
   concurrent cruncher can fail nondeterministically on clean hosted builds.
 - Battery voltage is read from Android in millivolts and displayed as volts
-  with one decimal place.
+  with one decimal place; non-positive voltage readings display `Unknown`.
 - Battery current uses `Unknown` when the device has no supported current
   sensor file.
 - Battery current probing continues through the reviewed device-specific

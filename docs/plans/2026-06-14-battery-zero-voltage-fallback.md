@@ -1,6 +1,6 @@
 # Treat Zero Battery Voltage as Unavailable
 
-Status: Planned
+Status: Completed
 
 ## Context
 
@@ -30,3 +30,19 @@ the app renders a misleading `0.0V` diagnostic instead of `Unknown`.
   is validated through source contracts and the pinned Android build.
 - Existing stacked pull requests remain open and must not be merged or closed
   without explicit owner authorization.
+
+## Verification Results
+
+Completed on 2026-06-14:
+
+- SDK-backed `make check` passed source contracts, debug and release Java
+  compilation, Android lint, Gradle test tasks, and debug APK assembly under
+  Amazon Corretto 8 and Android API 22. Lint retained one existing
+  `OldTargetApi` warning and no errors.
+- External-working-directory `make check` passed with Android SDK variables
+  intentionally unset.
+- Eight hostile mutations covering the non-positive guard, positive scaling,
+  maintained documentation, and completed-plan status were rejected.
+- Exact diff, generated-artifact, changed-line secret-pattern, and whitespace
+  audits passed before commit.
+- No physical device or vendor battery broadcast was exercised.

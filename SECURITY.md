@@ -56,6 +56,8 @@ Helpful reports include:
 - Refresh the full battery display from each live broadcast so diagnostic
   decisions do not rely on stale level, state, health, charging-source,
   voltage, temperature, or technology rows.
+- Treat non-positive voltage readings as unavailable instead of presenting a
+  misleading zero-value diagnostic.
 
 ## Mobile Privacy Notes
 
