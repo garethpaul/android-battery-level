@@ -1,6 +1,6 @@
 # Preserve Current Fallbacks Without a Device Model
 
-Status: Planned
+Status: Completed
 
 ## Context
 
@@ -52,12 +52,17 @@ still degrades to `Unknown` when no source can be read.
 
 ## Verification
 
-To be recorded after implementation:
-
-- SDK-free checker and Java 8/API 22 Gradle gates.
-- Repository-root and external-directory `make check`.
-- Isolated normalization, ordering, source-list, documentation, and plan
-  mutations.
+- `sh -n scripts/check-baseline.sh` passed.
+- With Amazon Corretto 8 and the Android API 22 SDK,
+  `./gradlew lint test assembleDebug --no-daemon` passed. Lint retained the
+  existing `OldTargetApi` warning for target SDK 22; debug and release unit-test
+  tasks and debug assembly completed successfully.
+- Repository-root `make check` passed with the API 22 SDK configured, and an
+  external-directory invocation passed with SDK variables unset to exercise
+  the portable source-contract path.
+- Eight isolated mutations were rejected for nullable normalization, ordering,
+  locale selection, generic-source preservation, documentation, and completed
+  plan evidence.
 
 ## Risks
 
