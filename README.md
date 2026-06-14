@@ -100,6 +100,8 @@ source review first, then rely on the hosted matching platform toolchain.
   with one decimal place.
 - Battery current uses `Unknown` when the device has no supported current
   sensor file.
+- Battery current probing continues through the reviewed device-specific
+  sources when an earlier existing file cannot be read or parsed.
 - Generic battery reader failure logs retain read-versus-parse categories
   without recording kernel paths, malformed sensor values, or stack traces.
 - Current text-file readers require exact field prefixes before parsing values

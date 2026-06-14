@@ -26,9 +26,18 @@ import android.os.Build;
 
 public class CurrentReader {
 
+    private static Long readOneLineCurrent(File source, boolean convertToMillis) {
+        if (!source.exists()) {
+            return null;
+        }
+
+        return OneLineReader.getValue(source, convertToMillis);
+    }
+
     static public Long getValue() {
 
         File f = null;
+        Long value = null;
 
         // htc desire hd / desire z / inspire?
         String model = Build.MODEL.toLowerCase(Locale.US);
@@ -37,63 +46,72 @@ public class CurrentReader {
                 model.contains("inspire")) {
 
             f = new File("/sys/class/power_supply/battery/batt_current");
-            if (f.exists()) {
-                return OneLineReader.getValue(f, false);
+            value = readOneLineCurrent(f, false);
+            if (value != null) {
+                return value;
             }
         }
 
         // nexus one cyangoenmod
         f = new File("/sys/devices/platform/ds2784-battery/getcurrent");
-        if (f.exists()) {
-            return OneLineReader.getValue(f, true);
+        value = readOneLineCurrent(f, true);
+        if (value != null) {
+            return value;
         }
 
         // sony ericsson xperia x1
         f = new File("/sys/devices/platform/i2c-adapter/i2c-0/0-0036/power_supply/ds2746-battery/current_now");
-        if (f.exists()) {
-            return OneLineReader.getValue(f, false);
+        value = readOneLineCurrent(f, false);
+        if (value != null) {
+            return value;
         }
 
         // xdandroid
         /*if (Build.MODEL.equalsIgnoreCase("MSM")) {*/
         f = new File("/sys/devices/platform/i2c-adapter/i2c-0/0-0036/power_supply/battery/current_now");
-        if (f.exists()) {
-            return OneLineReader.getValue(f, false);
+        value = readOneLineCurrent(f, false);
+        if (value != null) {
+            return value;
         }
         /*}*/
 
         // droid eris
         f = new File("/sys/class/power_supply/battery/smem_text");
         if (f.exists()) {
-            Long value = SMemTextReader.getValue();
+            value = SMemTextReader.getValue();
             if (value != null)
                 return value;
         }
 
         // some htc devices
         f = new File("/sys/class/power_supply/battery/batt_current");
-        if (f.exists())
-            return OneLineReader.getValue(f, false);
+        value = readOneLineCurrent(f, false);
+        if (value != null)
+            return value;
 
         // nexus one
         f = new File("/sys/class/power_supply/battery/current_now");
-        if (f.exists())
-            return OneLineReader.getValue(f, true);
+        value = readOneLineCurrent(f, true);
+        if (value != null)
+            return value;
 
         // samsung galaxy vibrant
         f = new File("/sys/class/power_supply/battery/batt_chg_current");
-        if (f.exists())
-            return OneLineReader.getValue(f, false);
+        value = readOneLineCurrent(f, false);
+        if (value != null)
+            return value;
 
         // sony ericsson x10
         f = new File("/sys/class/power_supply/battery/charger_current");
-        if (f.exists())
-            return OneLineReader.getValue(f, false);
+        value = readOneLineCurrent(f, false);
+        if (value != null)
+            return value;
 
         // Nook Color
         f = new File("/sys/class/power_supply/max17042-0/current_now");
-        if (f.exists())
-            return OneLineReader.getValue(f, false);
+        value = readOneLineCurrent(f, false);
+        if (value != null)
+            return value;
 
         return null;
     }

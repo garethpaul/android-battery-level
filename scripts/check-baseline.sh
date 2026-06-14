@@ -20,6 +20,7 @@ CURRENT_PREFIX_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-current-prefix-pars
 INTENT_NULL_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-intent-null-guards.md"
 LEVEL_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-12-battery-level-unavailable-display.md"
 READER_LOG_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-reader-log-redaction.md"
+CURRENT_FALLBACK_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-current-source-fallback.md"
 PLUGGED_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-plugged-unavailable-display.md"
 TECHNOLOGY_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-technology-normalization.md"
 LIVE_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-live-status-refresh.md"
@@ -99,6 +100,21 @@ jobs:
 
       - name: Run full verification
         run: make check
+EOF
+}
+
+expected_current_sources() {
+  cat <<'EOF'
+f = new File("/sys/class/power_supply/battery/batt_current");
+f = new File("/sys/devices/platform/ds2784-battery/getcurrent");
+f = new File("/sys/devices/platform/i2c-adapter/i2c-0/0-0036/power_supply/ds2746-battery/current_now");
+f = new File("/sys/devices/platform/i2c-adapter/i2c-0/0-0036/power_supply/battery/current_now");
+f = new File("/sys/class/power_supply/battery/smem_text");
+f = new File("/sys/class/power_supply/battery/batt_current");
+f = new File("/sys/class/power_supply/battery/current_now");
+f = new File("/sys/class/power_supply/battery/batt_chg_current");
+f = new File("/sys/class/power_supply/battery/charger_current");
+f = new File("/sys/class/power_supply/max17042-0/current_now");
 EOF
 }
 
@@ -408,6 +424,28 @@ fi
 
 if ! grep -Fq "Locale.US" "$CURRENT_READER"; then
   printf '%s\n' "CurrentReader must avoid default-locale model matching." >&2
+  exit 1
+fi
+
+for fallback_contract in \
+  "private static Long readOneLineCurrent(File source, boolean convertToMillis)" \
+  "if (!source.exists())" \
+  "return OneLineReader.getValue(source, convertToMillis);" \
+  "Long value = null;"; do
+  if ! grep -Fq "$fallback_contract" "$CURRENT_READER"; then
+    printf '%s\n' "CurrentReader must keep source fallback contract: $fallback_contract" >&2
+    exit 1
+  fi
+done
+if [ "$(grep -Fc 'readOneLineCurrent(' "$CURRENT_READER")" -ne 10 ] || \
+   [ "$(grep -Fc 'return OneLineReader.getValue' "$CURRENT_READER")" -ne 1 ] || \
+   [ "$(grep -Fc 'if (value != null)' "$CURRENT_READER")" -ne 10 ]; then
+  printf '%s\n' "CurrentReader must continue after nullable source reads and return only non-null values." >&2
+  exit 1
+fi
+
+if [ "$(grep -F 'f = new File("/sys/' "$CURRENT_READER" | sed 's/^[[:space:]]*//')" != "$(expected_current_sources)" ]; then
+  printf '%s\n' "CurrentReader must preserve the reviewed sysfs source order." >&2
   exit 1
 fi
 
@@ -829,6 +867,14 @@ if [ ! -f "$READER_LOG_PLAN" ] || \
    ! grep -Fq "make check" "$READER_LOG_PLAN" || \
    ! grep -Fq "hostile mutations" "$READER_LOG_PLAN"; then
   printf '%s\n' "Battery reader log-redaction plan must record completed verification." >&2
+  exit 1
+fi
+
+if [ ! -f "$CURRENT_FALLBACK_PLAN" ] || \
+   ! grep -Fq "Status: Completed" "$CURRENT_FALLBACK_PLAN" || \
+   ! grep -Fq "make check" "$CURRENT_FALLBACK_PLAN" || \
+   ! grep -Fq "focused hostile mutations" "$CURRENT_FALLBACK_PLAN"; then
+  printf '%s\n' "Battery current source fallback plan must record completed verification." >&2
   exit 1
 fi
 

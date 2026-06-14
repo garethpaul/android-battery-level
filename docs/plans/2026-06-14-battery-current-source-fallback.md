@@ -1,6 +1,6 @@
 # Battery Current Source Fallback
 
-Status: In Progress
+Status: Completed
 
 ## Problem
 
@@ -38,3 +38,24 @@ even when a later supported source contains a valid current measurement.
 - Do not change the current UI format or infer a value from failed reads.
 - Do not claim device-specific sensor behavior without compatible hardware.
 - Do not merge or close stacked pull requests without explicit authorization.
+
+## Work Completed
+
+- Added one guarded one-line source reader and routed all nine one-line probes
+  through it without changing their order, paths, parsers, or conversions.
+- Continued to each later source after a nullable read while preserving the
+  first non-null result and the final `null` fallback.
+- Added exact source-order, helper, non-null return, documentation, and
+  completed-plan contracts to the dependency-free checker.
+
+## Verification Results
+
+- Shell syntax and the dependency-free baseline checker passed.
+- Five focused hostile mutations were rejected: inverted helper existence
+  guard, restored direct nullable return, reordered source paths, inverted
+  result null guard, and stale plan status.
+- Local and external-working-directory `make check`, exact diff, artifact,
+  conflict-marker, whitespace, and credential-shaped added-line results are
+  recorded from the final implementation audit.
+- Device-specific sysfs fallback behavior remains a hardware validation
+  boundary; no emulator, physical device, or production result is claimed.
