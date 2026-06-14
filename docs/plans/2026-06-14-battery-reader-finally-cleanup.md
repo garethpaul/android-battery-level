@@ -1,6 +1,6 @@
 # Battery Reader Finally Cleanup
 
-Status: Planned
+Status: Completed
 
 ## Problem
 
@@ -29,11 +29,18 @@ sysfs failures.
 
 ## Verification
 
-- Run the focused portable checker first.
-- Run bounded Java 8/API 22 `make check`, including lint, unit-test tasks, and
-  debug assembly.
-- Reject mutations that remove a `finally`, remove the null guard or close,
-  restore success-only closure, expose exception details, or reopen the plan.
+- The focused portable checker and shell syntax checks passed.
+- Bounded Java 8/API 22 `make check` passed debug/release Java compilation,
+  Android lint with the one documented legacy warning, debug/release unit-test
+  tasks, and debug APK assembly.
+- Seven hostile mutations were rejected: removing a reader `finally`, removing
+  a null guard, removing a close call, restoring subordinate-stream closure,
+  exposing close exception details, removing README guidance, and reopening
+  this plan.
+- Final verification includes external-directory execution, exact diff,
+  whitespace, generated-artifact, and changed-line credential audits.
+- Device-specific sysfs exception behavior was not exercised on compatible
+  hardware.
 
 ## Scope Boundaries
 

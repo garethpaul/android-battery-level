@@ -104,6 +104,8 @@ source review first, then rely on the hosted matching platform toolchain.
   sources when an earlier existing file cannot be read or parsed.
 - Generic battery reader failure logs retain read-versus-parse categories
   without recording kernel paths, malformed sensor values, or stack traces.
+- Battery text readers close from finally blocks so sysfs read failures do not
+  retain descriptors during live refreshes.
 - Current text-file readers require exact field prefixes before parsing values
   from legacy kernel power-supply files.
 - Battery level percentages are normalized against Android's reported scale and

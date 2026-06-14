@@ -4,6 +4,8 @@
 
 - Continued probing later battery-current sysfs sources when an earlier
   existing file cannot produce a valid reading.
+- Battery text readers close from finally blocks, including read-failure paths,
+  and report close failures without path or exception details.
 - Added source-order, non-null return, completed-plan, and hostile-mutation
   contracts for current-source fallback behavior.
 
