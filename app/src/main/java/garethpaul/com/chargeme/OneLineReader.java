@@ -40,19 +40,24 @@ public class OneLineReader {
     public static Long getValue(File _f, boolean _convertToMillis) {
 
         String text = null;
+        BufferedReader br = null;
 
         try {
             FileInputStream fs = new FileInputStream(_f);
             InputStreamReader sr = new InputStreamReader(fs);
-            BufferedReader br = new BufferedReader(sr);
+            br = new BufferedReader(sr);
 
             text = br.readLine();
-
-            br.close();
-            sr.close();
-            fs.close();
         } catch (Exception ex) {
             Log.e("CurrentWidget", "battery current read failed");
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (Exception closeFailure) {
+                    Log.e("CurrentWidget", "battery reader close failed");
+                }
+            }
         }
 
         Long value = null;

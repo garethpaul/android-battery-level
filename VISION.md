@@ -37,6 +37,8 @@ Priority:
 - Keep unavailable battery current readings clear instead of exposing raw null
   values
 - Keep current text-file parsing constrained to exact field prefixes
+- Battery text readers close from finally blocks so failed sysfs reads cannot
+  accumulate open descriptors
 - Keep legacy action-bar presentation optional so theme changes do not crash
   startup
 - Keep local battery diagnostic state out of Android backups by default

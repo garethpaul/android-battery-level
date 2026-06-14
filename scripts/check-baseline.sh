@@ -21,6 +21,7 @@ INTENT_NULL_PLAN="$ROOT_DIR/docs/plans/2026-06-09-battery-intent-null-guards.md"
 LEVEL_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-12-battery-level-unavailable-display.md"
 READER_LOG_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-reader-log-redaction.md"
 CURRENT_FALLBACK_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-current-source-fallback.md"
+READER_FINALLY_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-reader-finally-cleanup.md"
 PLUGGED_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-plugged-unavailable-display.md"
 TECHNOLOGY_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-technology-normalization.md"
 LIVE_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-live-status-refresh.md"
@@ -832,10 +833,10 @@ if ! grep -Fq "Status: Completed" "$ROOT_DIR/docs/plans/2026-06-10-battery-live-
   exit 1
 fi
 
-if [ "$(grep -Fc 'Log.e("CurrentWidget"' "$BATT_ATTR_TEXT_READER" || true)" -ne 3 ] || \
-   [ "$(grep -Fc 'Log.e("CurrentWidget"' "$ONE_LINE_READER" || true)" -ne 2 ] || \
-   [ "$(grep -Fc 'Log.e("CurrentWidget"' "$SMEM_TEXT_READER" || true)" -ne 2 ]; then
-  printf '%s\n' "Battery text readers must keep exactly seven reviewed generic error logs." >&2
+if [ "$(grep -Fc 'Log.e("CurrentWidget"' "$BATT_ATTR_TEXT_READER" || true)" -ne 4 ] || \
+   [ "$(grep -Fc 'Log.e("CurrentWidget"' "$ONE_LINE_READER" || true)" -ne 3 ] || \
+   [ "$(grep -Fc 'Log.e("CurrentWidget"' "$SMEM_TEXT_READER" || true)" -ne 3 ]; then
+  printf '%s\n' "Battery text readers must keep exactly ten reviewed generic error logs." >&2
   exit 1
 fi
 invalid_current_count=$((
@@ -862,6 +863,34 @@ for reader in "$BATT_ATTR_TEXT_READER" "$ONE_LINE_READER" "$SMEM_TEXT_READER"; d
   done
 done
 
+for reader in "$BATT_ATTR_TEXT_READER" "$ONE_LINE_READER" "$SMEM_TEXT_READER"; do
+  if [ "$(grep -Fc "BufferedReader br = null;" "$reader" || true)" -ne 1 ] || \
+     [ "$(grep -Fc "} finally {" "$reader" || true)" -ne 1 ] || \
+     [ "$(grep -Fc "if (br != null)" "$reader" || true)" -ne 1 ] || \
+     [ "$(grep -Fc "br.close();" "$reader" || true)" -ne 1 ] || \
+     [ "$(grep -Fc 'Log.e("CurrentWidget", "battery reader close failed");' "$reader" || true)" -ne 1 ]; then
+    printf '%s\n' "$reader must close its reader once from a guarded finally block." >&2
+    exit 1
+  fi
+  if grep -Eq '(fr|fs|sr)\.close\(\);' "$reader"; then
+    printf '%s\n' "$reader must rely on the buffered reader to close subordinate streams." >&2
+    exit 1
+  fi
+  if ! awk '
+    /} finally \{/ { finally_line = NR }
+    /if \(br != null\)/ { guard = NR }
+    /br\.close\(\);/ { close_line = NR }
+    /battery reader close failed/ { close_log = NR }
+    END {
+      exit !(finally_line && guard && close_line && close_log &&
+        finally_line < guard && guard < close_line && close_line < close_log)
+    }
+  ' "$reader"; then
+    printf '%s\n' "$reader must order guarded close and generic logging inside finally." >&2
+    exit 1
+  fi
+done
+
 if [ ! -f "$READER_LOG_PLAN" ] || \
    ! grep -Fq "Status: Completed" "$READER_LOG_PLAN" || \
    ! grep -Fq "make check" "$READER_LOG_PLAN" || \
@@ -878,10 +907,25 @@ if [ ! -f "$CURRENT_FALLBACK_PLAN" ] || \
   exit 1
 fi
 
+if [ ! -f "$READER_FINALLY_PLAN" ] || \
+   ! grep -Fq "Status: Completed" "$READER_FINALLY_PLAN" || \
+   ! grep -Fq "make check" "$READER_FINALLY_PLAN" || \
+   ! grep -Fq "hostile mutations" "$READER_FINALLY_PLAN"; then
+  printf '%s\n' "Battery reader finally-cleanup plan must record completed verification." >&2
+  exit 1
+fi
+
 for reader_doc in "$README" "$SECURITY" "$CHANGES"; do
   if ! tr '\n' ' ' < "$reader_doc" | tr -s '[:space:]' ' ' | \
       grep -Fiq "generic battery reader failure logs"; then
     printf '%s\n' "$reader_doc must document generic battery reader failure logs." >&2
+    exit 1
+  fi
+done
+
+for reader_cleanup_doc in "$README" "$SECURITY" "$VISION" "$CHANGES"; do
+  if ! grep -Fq "Battery text readers close from finally blocks" "$reader_cleanup_doc"; then
+    printf '%s\n' "$reader_cleanup_doc must document exception-safe reader cleanup." >&2
     exit 1
   fi
 done
