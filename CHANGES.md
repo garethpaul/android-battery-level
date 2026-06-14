@@ -8,6 +8,9 @@
   and report close failures without path or exception details.
 - Added source-order, non-null return, completed-plan, and hostile-mutation
   contracts for current-source fallback behavior.
+- Added an exact-commit battery device verification matrix for broadcast values,
+  charging states, current sources, reader cleanup, lifecycle, and privacy-safe
+  evidence, with every runtime row explicitly unexecuted.
 
 ## 2026-06-13
 

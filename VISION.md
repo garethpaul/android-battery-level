@@ -45,6 +45,8 @@ Priority:
 - Keep the SDK-free `make check` baseline running in GitHub Actions
 - Keep the legacy Gradle runtime isolated behind a checksum-verified generated
   wrapper
+- Keep exact-commit battery device evidence separate from portable contracts,
+  with unexecuted broadcast and current-source scenarios recorded explicitly
 
 Next priorities:
 
@@ -53,6 +55,8 @@ Next priorities:
 - Add tests for battery formatting and lifecycle edge cases
 - Review behavior across charging states and newer Android versions
 - Improve UI labels without changing the sample's simple purpose
+- Execute the battery device verification matrix across representative charging
+  states and Android versions with privacy-safe evidence
 
 Contribution rules:
 
