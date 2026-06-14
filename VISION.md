@@ -34,6 +34,7 @@ Priority:
 - Distinguish unavailable temperature data from a real zero-degree reading
 - Keep normalized battery percentages clamped to the user-visible display range
 - Keep displayed battery units converted before presentation
+- Keep non-positive voltage readings on the `Unknown` fallback
 - Keep unavailable battery current readings clear instead of exposing raw null
   values
 - Keep current text-file parsing constrained to exact field prefixes

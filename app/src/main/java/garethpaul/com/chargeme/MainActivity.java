@@ -296,7 +296,7 @@ public class MainActivity extends Activity implements mBatInfoReceiver.BatterySt
     }
 
     private static String batteryVoltageText(int millivolts) {
-        if (millivolts < 0) {
+        if (millivolts <= 0) {
             return "Unknown";
         }
 
