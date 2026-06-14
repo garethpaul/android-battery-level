@@ -107,6 +107,8 @@ privacy-safe evidence, and explicit unexecuted rows.
   sensor file.
 - Battery current probing continues through the reviewed device-specific
   sources when an earlier existing file cannot be read or parsed.
+- The fallback for missing model metadata preserves generic current probes and
+  displays `Unknown` only when no supported source succeeds.
 - Generic battery reader failure logs retain read-versus-parse categories
   without recording kernel paths, malformed sensor values, or stack traces.
 - Battery text readers close from finally blocks so sysfs read failures do not

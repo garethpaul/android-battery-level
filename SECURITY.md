@@ -47,6 +47,8 @@ Helpful reports include:
   including exception messages, kernel paths, malformed values, or stack traces.
 - Battery text readers close from finally blocks, with generic close-failure
   logging that does not expose device paths or exception details.
+- The handling for missing model metadata preserves generic current probes so
+  unavailable platform identity data cannot bypass the reviewed fallbacks.
 - Unavailable charging-source data remains `Unknown` instead of being reported
   as a confirmed unplugged state.
 - Battery technology labels are trimmed before display so whitespace-only

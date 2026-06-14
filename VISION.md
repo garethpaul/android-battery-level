@@ -37,6 +37,7 @@ Priority:
 - Keep unavailable battery current readings clear instead of exposing raw null
   values
 - Keep current text-file parsing constrained to exact field prefixes
+- Ensure missing model metadata preserves generic current probes
 - Battery text readers close from finally blocks so failed sysfs reads cannot
   accumulate open descriptors
 - Keep legacy action-bar presentation optional so theme changes do not crash

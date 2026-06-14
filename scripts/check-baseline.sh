@@ -23,6 +23,7 @@ READER_LOG_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-reader-log-redaction.md
 CURRENT_FALLBACK_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-current-source-fallback.md"
 READER_FINALLY_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-reader-finally-cleanup.md"
 DEVICE_VERIFICATION_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-device-verification-checklist.md"
+MODEL_FALLBACK_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-model-fallback.md"
 PLUGGED_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-plugged-unavailable-display.md"
 TECHNOLOGY_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-technology-normalization.md"
 LIVE_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-live-status-refresh.md"
@@ -38,7 +39,8 @@ WRAPPER_PROPERTIES="$ROOT_DIR/gradle/wrapper/gradle-wrapper.properties"
 
 for required_path in \
   "$ROOT_DIR/DEVICE_VERIFICATION.md" \
-  "$DEVICE_VERIFICATION_PLAN"; do
+  "$DEVICE_VERIFICATION_PLAN" \
+  "$MODEL_FALLBACK_PLAN"; do
   if [ ! -f "$required_path" ]; then
     printf '%s\n' "Required file is missing: ${required_path#"$ROOT_DIR/"}" >&2
     exit 1
@@ -473,6 +475,41 @@ if ! grep -Fq "Locale.US" "$CURRENT_READER"; then
   printf '%s\n' "CurrentReader must avoid default-locale model matching." >&2
   exit 1
 fi
+
+for model_fallback_contract in \
+  "String deviceModel = Build.MODEL;" \
+  'String model = deviceModel == null ? "" : deviceModel.toLowerCase(Locale.US);' \
+  'model.contains("desire hd")'; do
+  if ! grep -Fq "$model_fallback_contract" "$CURRENT_READER"; then
+    printf '%s\n' "CurrentReader must keep model fallback contract: $model_fallback_contract" >&2
+    exit 1
+  fi
+done
+
+device_model_line=$(grep -nF "String deviceModel = Build.MODEL;" "$CURRENT_READER" | cut -d: -f1)
+normalized_model_line=$(grep -nF 'String model = deviceModel == null ? "" : deviceModel.toLowerCase(Locale.US);' "$CURRENT_READER" | cut -d: -f1)
+model_match_line=$(grep -nF 'model.contains("desire hd")' "$CURRENT_READER" | cut -d: -f1)
+if [ -z "$device_model_line" ] || [ -z "$normalized_model_line" ] || \
+   [ -z "$model_match_line" ] || [ "$device_model_line" -ge "$normalized_model_line" ] || \
+   [ "$normalized_model_line" -ge "$model_match_line" ]; then
+  printf '%s\n' "CurrentReader must normalize nullable model metadata before model-specific probes." >&2
+  exit 1
+fi
+
+for model_fallback_document in "$README" "$SECURITY" "$VISION" "$CHANGES"; do
+  if ! grep -Fq "missing model metadata preserves generic current probes" \
+    "$model_fallback_document"; then
+    printf '%s\n' "$model_fallback_document must document missing model current fallback." >&2
+    exit 1
+  fi
+done
+
+for model_fallback_plan_contract in "Status: Completed" "make check" "mutations"; do
+  if ! grep -Fqi "$model_fallback_plan_contract" "$MODEL_FALLBACK_PLAN"; then
+    printf '%s\n' "Battery model fallback plan must preserve completion evidence: $model_fallback_plan_contract" >&2
+    exit 1
+  fi
+done
 
 for fallback_contract in \
   "private static Long readOneLineCurrent(File source, boolean convertToMillis)" \

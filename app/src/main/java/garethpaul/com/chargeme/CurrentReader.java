@@ -40,7 +40,8 @@ public class CurrentReader {
         Long value = null;
 
         // htc desire hd / desire z / inspire?
-        String model = Build.MODEL.toLowerCase(Locale.US);
+        String deviceModel = Build.MODEL;
+        String model = deviceModel == null ? "" : deviceModel.toLowerCase(Locale.US);
         if (model.contains("desire hd") ||
                 model.contains("desire z") ||
                 model.contains("inspire")) {
