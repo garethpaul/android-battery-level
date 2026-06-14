@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-06-14
+
+- Continued probing later battery-current sysfs sources when an earlier
+  existing file cannot produce a valid reading.
+- Added source-order, non-null return, completed-plan, and hostile-mutation
+  contracts for current-source fallback behavior.
+
 ## 2026-06-13
 
 - Refreshed the full battery display from each live broadcast instead of
