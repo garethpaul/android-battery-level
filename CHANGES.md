@@ -8,6 +8,8 @@
   existing file cannot produce a valid reading.
 - Ensured missing model metadata preserves generic current probes instead of
   failing before the reviewed source list is tried.
+- During display rendering, missing device identity metadata falls back to the available value or `Unknown`
+  so nullable or blank Build fields cannot abort battery status rendering.
 - Battery text readers close from finally blocks, including read-failure paths,
   and report close failures without path or exception details.
 - Added source-order, non-null return, completed-plan, and hostile-mutation

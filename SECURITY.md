@@ -49,6 +49,8 @@ Helpful reports include:
   logging that does not expose device paths or exception details.
 - The handling for missing model metadata preserves generic current probes so
   unavailable platform identity data cannot bypass the reviewed fallbacks.
+- During display rendering, missing device identity metadata falls back to the available value or `Unknown`
+  without blocking unrelated battery readings.
 - Unavailable charging-source data remains `Unknown` instead of being reported
   as a confirmed unplugged state.
 - Battery technology labels are trimmed before display so whitespace-only

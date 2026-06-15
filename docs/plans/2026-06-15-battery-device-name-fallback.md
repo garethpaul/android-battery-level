@@ -1,6 +1,6 @@
 # Battery Device Name Fallback
 
-Status: Planned
+Status: Completed
 
 ## Summary
 
@@ -108,3 +108,10 @@ claiming physical-device metadata coverage.
 - **AE2:** Manufacturer and model are blank: the label is `Unknown`.
 - **AE3:** Manufacturer is `Google` and model is `google Pixel 8`: the label is
   `Google Pixel 8`, not `Google Google Pixel 8`.
+
+## Verification Results
+
+- `JAVA_HOME=/usr/lib/jvm/java-1.8.0-amazon-corretto ANDROID_HOME=/home/gjones/android-sdk ANDROID_SDK_ROOT=/home/gjones/android-sdk ./gradlew test lint assembleDebug --no-daemon` passed with debug and release Java compilation, unit tests, lint, and debug APK assembly.
+- Twelve hostile mutations were rejected for null normalization, ordered fallback conditions and return values, case-insensitive prefix handling, composed output, and maintained guidance.
+- Canonical repository and external-directory `make check` runs use the pinned Java 8 and Android SDK environment recorded above.
+- No physical-device Build metadata was exercised; vendor-specific runtime verification remains explicit in `DEVICE_VERIFICATION.md`.

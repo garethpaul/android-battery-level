@@ -25,6 +25,7 @@ READER_FINALLY_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-reader-finally-clea
 DEVICE_VERIFICATION_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-device-verification-checklist.md"
 MODEL_FALLBACK_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-model-fallback.md"
 ZERO_VOLTAGE_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-zero-voltage-fallback.md"
+DEVICE_NAME_FALLBACK_PLAN="$ROOT_DIR/docs/plans/2026-06-15-battery-device-name-fallback.md"
 PLUGGED_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-plugged-unavailable-display.md"
 TECHNOLOGY_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-technology-normalization.md"
 LIVE_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-live-status-refresh.md"
@@ -42,7 +43,8 @@ for required_path in \
   "$ROOT_DIR/DEVICE_VERIFICATION.md" \
   "$DEVICE_VERIFICATION_PLAN" \
   "$MODEL_FALLBACK_PLAN" \
-  "$ZERO_VOLTAGE_PLAN"; do
+  "$ZERO_VOLTAGE_PLAN" \
+  "$DEVICE_NAME_FALLBACK_PLAN"; do
   if [ ! -f "$required_path" ]; then
     printf '%s\n' "Required file is missing: ${required_path#"$ROOT_DIR/"}" >&2
     exit 1
@@ -536,6 +538,69 @@ done
 for model_fallback_plan_contract in "Status: Completed" "make check" "mutations"; do
   if ! grep -Fqi "$model_fallback_plan_contract" "$MODEL_FALLBACK_PLAN"; then
     printf '%s\n' "Battery model fallback plan must preserve completion evidence: $model_fallback_plan_contract" >&2
+    exit 1
+  fi
+done
+
+for device_name_contract in \
+  'String manufacturer = Build.MANUFACTURER == null ? "" : Build.MANUFACTURER.trim();' \
+  'String model = Build.MODEL == null ? "" : Build.MODEL.trim();' \
+  'if (manufacturer.length() == 0 && model.length() == 0)' \
+  'return "Unknown";' \
+  'if (manufacturer.length() == 0)' \
+  'return capitalize(model);' \
+  'if (model.length() == 0)' \
+  'return capitalize(manufacturer);' \
+  'model.toLowerCase(Locale.US).startsWith(manufacturer.toLowerCase(Locale.US))' \
+  'return capitalize(manufacturer) + " " + capitalize(model);'; do
+  if ! grep -Fq "$device_name_contract" "$MAIN_ACTIVITY"; then
+    printf '%s\n' "MainActivity must keep device-name fallback contract: $device_name_contract" >&2
+    exit 1
+  fi
+done
+
+if ! awk '
+  /public String getDeviceName\(\)/ { in_name = 1 }
+  /private String capitalize\(String s\)/ { in_name = 0 }
+  in_name && /Build\.MANUFACTURER == null/ { manufacturer = NR }
+  in_name && /Build\.MODEL == null/ { model = NR }
+  in_name && /manufacturer\.length\(\) == 0 && model\.length\(\) == 0/ { both_empty = NR }
+  in_name && /return "Unknown";/ { unknown = NR }
+  in_name && /manufacturer\.length\(\) == 0/ && $0 !~ /&& model\.length/ { manufacturer_empty = NR }
+  in_name && /return capitalize\(model\);/ && !model_only { model_only = NR }
+  in_name && /model\.length\(\) == 0/ && $0 !~ /manufacturer\.length.*&&/ { model_empty = NR }
+  in_name && /return capitalize\(manufacturer\);/ { manufacturer_only = NR }
+  in_name && /toLowerCase\(Locale\.US\)\.startsWith/ { prefix = NR }
+  in_name && prefix && /return capitalize\(model\);/ { prefixed_model = NR }
+  in_name && /capitalize\(manufacturer\) \+ " " \+ capitalize\(model\)/ { combined = NR }
+  END {
+    exit !(manufacturer && model && both_empty && unknown && manufacturer_empty &&
+      model_only && model_empty && manufacturer_only && prefix && prefixed_model &&
+      combined && manufacturer < model && model < both_empty && both_empty < unknown &&
+      unknown < manufacturer_empty && manufacturer_empty < model_only &&
+      model_only < model_empty && model_empty < manufacturer_only &&
+      manufacturer_only < prefix && prefix < prefixed_model && prefixed_model < combined)
+  }
+' "$MAIN_ACTIVITY"; then
+  printf '%s\n' "MainActivity must normalize device metadata before ordered fallback rendering." >&2
+  exit 1
+fi
+
+for device_name_document in "$README" "$SECURITY" "$CHANGES"; do
+  if ! grep -Fq "missing device identity metadata falls back to the available value or \`Unknown\`" \
+    "$device_name_document"; then
+    printf '%s\n' "$device_name_document must document the device-name fallback." >&2
+    exit 1
+  fi
+done
+
+for device_name_plan_contract in \
+  "Status: Completed" \
+  "make check" \
+  "hostile mutations" \
+  "No physical-device Build metadata was exercised"; do
+  if ! grep -Fqi "$device_name_plan_contract" "$DEVICE_NAME_FALLBACK_PLAN"; then
+    printf '%s\n' "Battery device-name plan must preserve completion evidence: $device_name_plan_contract" >&2
     exit 1
   fi
 done

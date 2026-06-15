@@ -231,13 +231,21 @@ public class MainActivity extends Activity implements mBatInfoReceiver.BatterySt
     }
 
     public String getDeviceName() {
-        String manufacturer = Build.MANUFACTURER;
-        String model = Build.MODEL;
-        if (model.startsWith(manufacturer)) {
-            return capitalize(model);
-        } else {
-            return capitalize(manufacturer) + " " + model;
+        String manufacturer = Build.MANUFACTURER == null ? "" : Build.MANUFACTURER.trim();
+        String model = Build.MODEL == null ? "" : Build.MODEL.trim();
+        if (manufacturer.length() == 0 && model.length() == 0) {
+            return "Unknown";
         }
+        if (manufacturer.length() == 0) {
+            return capitalize(model);
+        }
+        if (model.length() == 0) {
+            return capitalize(manufacturer);
+        }
+        if (model.toLowerCase(Locale.US).startsWith(manufacturer.toLowerCase(Locale.US))) {
+            return capitalize(model);
+        }
+        return capitalize(manufacturer) + " " + capitalize(model);
     }
 
 
