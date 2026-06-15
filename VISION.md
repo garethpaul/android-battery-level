@@ -17,6 +17,8 @@ The current focus is:
 
 Priority:
 
+- Keep the explicit launcher export boundary limited to `.MainActivity` and
+  keep unrelated Android components private
 - Preserve the documented legacy Android build stack
 - Keep broadcast receiver lifecycle handling correct
 - Maintain an SDK-free baseline check for quick verification

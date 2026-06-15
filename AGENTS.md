@@ -55,6 +55,8 @@
   `Unknown` and uses the neutral battery icon instead of exposing `-1`.
 - Unavailable charging-source data displays as `Unknown`; only Android's
   explicit zero value is presented as `On Battery`.
+- Keep the explicit launcher export boundary on `.MainActivity`, which owns the
+  sole `MAIN`/`LAUNCHER` filter; do not export unrelated components.
 
 ## Agent workflow
 

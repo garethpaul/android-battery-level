@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-15
+
+- Added an explicit launcher export boundary for the sole `MAIN`/`LAUNCHER`
+  activity and a structural manifest contract.
+
 ## 2026-06-14
 
 - Treated non-positive voltage readings as unavailable instead of displaying

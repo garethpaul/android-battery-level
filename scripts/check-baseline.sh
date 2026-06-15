@@ -26,6 +26,7 @@ DEVICE_VERIFICATION_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-device-verific
 MODEL_FALLBACK_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-model-fallback.md"
 ZERO_VOLTAGE_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-zero-voltage-fallback.md"
 DEVICE_NAME_FALLBACK_PLAN="$ROOT_DIR/docs/plans/2026-06-15-battery-device-name-fallback.md"
+LAUNCHER_EXPORT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-explicit-launcher-export.md"
 PLUGGED_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-plugged-unavailable-display.md"
 TECHNOLOGY_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-technology-normalization.md"
 LIVE_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-live-status-refresh.md"
@@ -247,6 +248,67 @@ if grep -Fq 'android:allowBackup="true"' "$ROOT_DIR/app/src/main/AndroidManifest
   printf '%s\n' "Battery app must not allow Android backups." >&2
   exit 1
 fi
+
+MANIFEST="$ROOT_DIR/app/src/main/AndroidManifest.xml"
+exported_count=$(awk '
+  {
+    line = $0
+    while (match(line, /android:exported=/)) {
+      count++
+      line = substr(line, RSTART + RLENGTH)
+    }
+  }
+  END { print count + 0 }
+' "$MANIFEST")
+if [ "$exported_count" -ne 1 ]; then
+  printf '%s\n' "Battery app must declare exactly one explicit component export boundary." >&2
+  exit 1
+fi
+if ! awk '
+  /<activity([[:space:]>]|$)/ {
+    in_activity = 1
+    name = 0
+    exported = 0
+    main_action = 0
+    launcher_category = 0
+  }
+  in_activity && /android:name="\.MainActivity"/ { name = 1 }
+  in_activity && /android:exported="true"/ { exported++ }
+  in_activity && /android.intent.action.MAIN/ { main_action = 1 }
+  in_activity && /android.intent.category.LAUNCHER/ { launcher_category = 1 }
+  in_activity && /<\/activity>/ {
+    if (name && exported == 1 && main_action && launcher_category) {
+      valid_launcher++
+    }
+    in_activity = 0
+  }
+  END { exit !(valid_launcher == 1) }
+' "$MANIFEST"; then
+  printf '%s\n' "Battery launcher activity must be explicitly exported with its MAIN/LAUNCHER filter." >&2
+  exit 1
+fi
+if grep -Fq 'android:exported="false"' "$MANIFEST"; then
+  printf '%s\n' "Battery launcher activity must remain externally reachable." >&2
+  exit 1
+fi
+
+for launcher_export_document in \
+  "$ROOT_DIR/AGENTS.md" "$README" "$SECURITY" "$VISION" "$CHANGES"; do
+  if ! grep -Fq "explicit launcher export boundary" "$launcher_export_document"; then
+    printf '%s\n' "$launcher_export_document must document the explicit launcher export boundary." >&2
+    exit 1
+  fi
+done
+for launcher_export_plan_contract in \
+  "status: completed" \
+  'android:exported="true"' \
+  'repository and external-directory `make check` passed' \
+  "hostile mutations were rejected"; do
+  if ! grep -Fq "$launcher_export_plan_contract" "$LAUNCHER_EXPORT_PLAN"; then
+    printf '%s\n' "Battery launcher export plan must preserve completion evidence: $launcher_export_plan_contract" >&2
+    exit 1
+  fi
+done
 
 if grep -Fq "level > 31" "$MAIN_ACTIVITY"; then
   printf '%s\n' "Battery icon threshold must not skip levels 30 and 31." >&2

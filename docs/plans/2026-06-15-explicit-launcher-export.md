@@ -1,7 +1,7 @@
 ---
 title: ChargeMe Explicit Launcher Export Boundary
 type: security
-status: planned
+status: completed
 date: 2026-06-15
 ---
 
@@ -83,3 +83,18 @@ Document the intentional boundary and exact validation evidence.
 - New activities, services, receivers, providers, deep links, or permissions.
 - Battery reader lifecycle, device identity fallback, voltage calculations,
   layouts, strings, or presentation behavior.
+
+## Completion Evidence
+
+- POSIX syntax and the focused battery baseline checker passed.
+- repository and external-directory `make check` passed under Java 8 with the
+  configured Android SDK; lint, debug/release unit execution, and debug
+  assembly succeeded. Android lint retained one pre-existing non-fatal issue
+  in each build variant.
+- Seven isolated hostile mutations were rejected for missing, false,
+  application-owned, filter-detached, same-line duplicate, missing-guidance,
+  and incomplete-plan variants.
+- The exact eight-path diff, generated-artifact cleanup, file modes,
+  whitespace, conflict markers, dependency/workflow drift, and
+  credential-shaped additions were audited before commit.
+- No emulator, physical-device, or live battery-event scenario was executed.

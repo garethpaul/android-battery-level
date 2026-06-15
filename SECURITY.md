@@ -16,6 +16,9 @@ Do not open a public issue that includes exploit code, secrets, personal data, o
 
 Helpful reports include:
 
+- The explicit launcher export boundary is limited to `.MainActivity`; the
+  portable contract rejects unrelated exported components.
+
 - the affected file, endpoint, permission, dependency, or workflow
 - a concise impact statement explaining what an attacker could do
 - reproduction steps using test data and accounts you control
