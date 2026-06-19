@@ -25,95 +25,66 @@ import java.util.Locale;
 import android.os.Build;
 
 public class CurrentReader {
-
-    private static Long readOneLineCurrent(File source, boolean convertToMillis) {
-        if (!source.exists()) {
-            return null;
-        }
-
-        return OneLineReader.getValue(source, convertToMillis);
+    interface SourceReader {
+        Long read(String path, int divisor);
     }
 
+    private static final String SMEM_PATH = "/sys/class/power_supply/battery/smem_text";
+
     static public Long getValue() {
+        return getValue(Build.MODEL, new SourceReader() {
+            @Override
+            public Long read(String path, int divisor) {
+                File source = new File(path);
+                if (!source.exists()) {
+                    return null;
+                }
+                if (SMEM_PATH.equals(path)) {
+                    return SMemTextReader.getValue(source);
+                }
+                return OneLineReader.getValue(source, divisor);
+            }
+        });
+    }
 
-        File f = null;
-        Long value = null;
-
-        // htc desire hd / desire z / inspire?
-        String deviceModel = Build.MODEL;
+    static Long getValue(String deviceModel, SourceReader sourceReader) {
         String model = deviceModel == null ? "" : deviceModel.toLowerCase(Locale.US);
         if (model.contains("desire hd") ||
                 model.contains("desire z") ||
                 model.contains("inspire")) {
-
-            f = new File("/sys/class/power_supply/battery/batt_current");
-            value = readOneLineCurrent(f, false);
-            if (value != null) {
+            Long value = read(sourceReader,
+                    "/sys/class/power_supply/battery/batt_current", 1);
+            if (BatteryTelemetry.isCurrentPlausible(value)) {
                 return value;
             }
         }
 
-        // nexus one cyangoenmod
-        f = new File("/sys/devices/platform/ds2784-battery/getcurrent");
-        value = readOneLineCurrent(f, true);
-        if (value != null) {
-            return value;
-        }
-
-        // sony ericsson xperia x1
-        f = new File("/sys/devices/platform/i2c-adapter/i2c-0/0-0036/power_supply/ds2746-battery/current_now");
-        value = readOneLineCurrent(f, false);
-        if (value != null) {
-            return value;
-        }
-
-        // xdandroid
-        /*if (Build.MODEL.equalsIgnoreCase("MSM")) {*/
-        f = new File("/sys/devices/platform/i2c-adapter/i2c-0/0-0036/power_supply/battery/current_now");
-        value = readOneLineCurrent(f, false);
-        if (value != null) {
-            return value;
-        }
-        /*}*/
-
-        // droid eris
-        f = new File("/sys/class/power_supply/battery/smem_text");
-        if (f.exists()) {
-            value = SMemTextReader.getValue();
-            if (value != null)
+        String[] paths = {
+                "/sys/devices/platform/ds2784-battery/getcurrent",
+                "/sys/devices/platform/i2c-adapter/i2c-0/0-0036/power_supply/ds2746-battery/current_now",
+                "/sys/devices/platform/i2c-adapter/i2c-0/0-0036/power_supply/battery/current_now",
+                SMEM_PATH,
+                "/sys/class/power_supply/battery/batt_current",
+                "/sys/class/power_supply/battery/current_now",
+                "/sys/class/power_supply/battery/batt_chg_current",
+                "/sys/class/power_supply/battery/charger_current",
+                "/sys/class/power_supply/max17042-0/current_now"
+        };
+        int[] divisors = {1000, 1000, 1000, 1, 1, 1000, 1, 1, 1000};
+        for (int index = 0; index < paths.length; index++) {
+            Long value = read(sourceReader, paths[index], divisors[index]);
+            if (BatteryTelemetry.isCurrentPlausible(value)) {
                 return value;
+            }
         }
-
-        // some htc devices
-        f = new File("/sys/class/power_supply/battery/batt_current");
-        value = readOneLineCurrent(f, false);
-        if (value != null)
-            return value;
-
-        // nexus one
-        f = new File("/sys/class/power_supply/battery/current_now");
-        value = readOneLineCurrent(f, true);
-        if (value != null)
-            return value;
-
-        // samsung galaxy vibrant
-        f = new File("/sys/class/power_supply/battery/batt_chg_current");
-        value = readOneLineCurrent(f, false);
-        if (value != null)
-            return value;
-
-        // sony ericsson x10
-        f = new File("/sys/class/power_supply/battery/charger_current");
-        value = readOneLineCurrent(f, false);
-        if (value != null)
-            return value;
-
-        // Nook Color
-        f = new File("/sys/class/power_supply/max17042-0/current_now");
-        value = readOneLineCurrent(f, false);
-        if (value != null)
-            return value;
 
         return null;
+    }
+
+    private static Long read(SourceReader sourceReader, String path, int divisor) {
+        if (sourceReader == null) {
+            return null;
+        }
+        return sourceReader.read(path, divisor);
     }
 }

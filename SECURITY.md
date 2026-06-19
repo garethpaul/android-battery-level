@@ -48,6 +48,15 @@ Helpful reports include:
   and display fallback values without crashing the local diagnostic UI.
 - Generic battery reader failure logs preserve read and parse categories without
   including exception messages, kernel paths, malformed values, or stack traces.
+- Battery and device metadata remains local UI data; the app has no network
+  permission, analytics, or telemetry path.
+- Manufacturer, model, and technology labels reject control and bidirectional
+  format characters before display.
+- Extreme current, voltage, and temperature values fail closed to `Unknown`.
+  Standard Linux `current_now` sources convert microamps to milliamps, and an
+  implausible earlier source cannot suppress a later valid source.
+- These bounds limit corruption and spoofing but do not certify OEM sensor or
+  vendor-kernel accuracy.
 - Battery text readers close from finally blocks, with generic close-failure
   logging that does not expose device paths or exception details.
 - The handling for missing model metadata preserves generic current probes so

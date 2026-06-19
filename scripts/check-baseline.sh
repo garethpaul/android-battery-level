@@ -5,6 +5,7 @@ ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 MAIN_ACTIVITY="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/MainActivity.java"
 BAT_INFO_RECEIVER="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/mBatInfoReceiver.java"
 CURRENT_READER="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/CurrentReader.java"
+BATTERY_TELEMETRY="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java"
 ONE_LINE_READER="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/OneLineReader.java"
 SMEM_TEXT_READER="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/SMemTextReader.java"
 BATT_ATTR_TEXT_READER="$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/BattAttrTextReader.java"
@@ -39,8 +40,13 @@ GRADLEW="$ROOT_DIR/gradlew"
 GRADLEW_BAT="$ROOT_DIR/gradlew.bat"
 WRAPPER_JAR="$ROOT_DIR/gradle/wrapper/gradle-wrapper.jar"
 WRAPPER_PROPERTIES="$ROOT_DIR/gradle/wrapper/gradle-wrapper.properties"
+HOST_TEST="$ROOT_DIR/scripts/test-battery-host.sh"
+MUTATION_TEST="$ROOT_DIR/scripts/test-battery-mutations.sh"
 
 for required_path in \
+  "$BATTERY_TELEMETRY" \
+  "$HOST_TEST" \
+  "$MUTATION_TEST" \
   "$ROOT_DIR/DEVICE_VERIFICATION.md" \
   "$DEVICE_VERIFICATION_PLAN" \
   "$MODEL_FALLBACK_PLAN" \
@@ -51,6 +57,12 @@ for required_path in \
     exit 1
   fi
 done
+
+if [ "$(grep -Fc '$(ROOT)scripts/test-battery-host.sh' "$ROOT_DIR/Makefile")" -ne 1 ] || \
+   [ "$(grep -Fc '$(ROOT)scripts/test-battery-mutations.sh' "$ROOT_DIR/Makefile")" -ne 1 ]; then
+  printf '%s\n' "Makefile test must run host behavior and mutation gates." >&2
+  exit 1
+fi
 
 for device_contract in \
   'commit SHA and pull request' \
@@ -191,7 +203,10 @@ for pattern in \
   "private boolean batteryReceiverRegistered;" \
   "private void registerBatteryReceiver()" \
   "private void unregisterBatteryReceiver()" \
-  "unregisterReceiver(myBatInfoReceiver);" \
+  "mBatInfoReceiver receiver = myBatInfoReceiver;" \
+  "batteryReceiverRegistered = false;" \
+  "unregisterReceiver(receiver);" \
+  'Log.e("ChargeMe", "battery receiver unregister failed");' \
   "private static Intent batteryStatusIntent(Context context)" \
   "private int batteryLevelPercent(Intent batteryStatus)" \
   "batteryStatus == null" \
@@ -202,16 +217,9 @@ for pattern in \
   fi
 done
 
-if ! awk '
-  /private static String batteryVoltageText\(int millivolts\)/ { in_formatter = 1 }
-  in_formatter && /if \(millivolts <= 0\)/ { unavailable = NR }
-  in_formatter && !unknown && /return "Unknown";/ { unknown = NR }
-  in_formatter && /String\.format\(Locale\.US, "%.1fV", millivolts \/ 1000\.0f\)/ { format = NR }
-  END {
-    exit !(unavailable && unknown && format && unavailable < unknown && unknown < format)
-  }
-' "$MAIN_ACTIVITY"; then
-  printf '%s\n' "Battery voltage must treat non-positive readings as unavailable before formatting." >&2
+if ! grep -Fq 'return BatteryTelemetry.voltageText(millivolts);' "$MAIN_ACTIVITY" || \
+   ! grep -Fq 'millivolts <= 0 || millivolts > MAX_VOLTAGE_MILLIVOLTS' "$BATTERY_TELEMETRY"; then
+  printf '%s\n' "Battery voltage must reject unavailable and implausible readings before formatting." >&2
   exit 1
 fi
 
@@ -320,7 +328,7 @@ if grep -Fq "return Math.round((rawLevel * 100.0f) / scale);" "$MAIN_ACTIVITY"; 
   exit 1
 fi
 
-if ! grep -Fq "Math.max(0, Math.min(100, percent));" "$MAIN_ACTIVITY"; then
+if ! grep -Fq "Math.max(0L, Math.min(100L, roundedPercent));" "$BATTERY_TELEMETRY"; then
   printf '%s\n' "Battery level percentages must be clamped to 0 through 100." >&2
   exit 1
 fi
@@ -570,7 +578,7 @@ if ! grep -Fq "Locale.US" "$CURRENT_READER"; then
 fi
 
 for model_fallback_contract in \
-  "String deviceModel = Build.MODEL;" \
+  "return getValue(Build.MODEL, new SourceReader()" \
   'String model = deviceModel == null ? "" : deviceModel.toLowerCase(Locale.US);' \
   'model.contains("desire hd")'; do
   if ! grep -Fq "$model_fallback_contract" "$CURRENT_READER"; then
@@ -579,7 +587,7 @@ for model_fallback_contract in \
   fi
 done
 
-device_model_line=$(grep -nF "String deviceModel = Build.MODEL;" "$CURRENT_READER" | cut -d: -f1)
+device_model_line=$(grep -nF "return getValue(Build.MODEL, new SourceReader()" "$CURRENT_READER" | cut -d: -f1)
 normalized_model_line=$(grep -nF 'String model = deviceModel == null ? "" : deviceModel.toLowerCase(Locale.US);' "$CURRENT_READER" | cut -d: -f1)
 model_match_line=$(grep -nF 'model.contains("desire hd")' "$CURRENT_READER" | cut -d: -f1)
 if [ -z "$device_model_line" ] || [ -z "$normalized_model_line" ] || \
@@ -605,46 +613,21 @@ for model_fallback_plan_contract in "Status: Completed" "make check" "mutations"
 done
 
 for device_name_contract in \
-  'String manufacturer = Build.MANUFACTURER == null ? "" : Build.MANUFACTURER.trim();' \
-  'String model = Build.MODEL == null ? "" : Build.MODEL.trim();' \
-  'if (manufacturer.length() == 0 && model.length() == 0)' \
-  'return "Unknown";' \
-  'if (manufacturer.length() == 0)' \
-  'return capitalize(model);' \
-  'if (model.length() == 0)' \
-  'return capitalize(manufacturer);' \
+  'return BatteryTelemetry.deviceName(Build.MANUFACTURER, Build.MODEL);' \
+  'static String deviceName(String manufacturerValue, String modelValue)' \
+  'hasRejectedContent(manufacturerValue)' \
+  'hasRejectedContent(modelValue)' \
   'model.toLowerCase(Locale.US).startsWith(manufacturer.toLowerCase(Locale.US))' \
   'return capitalize(manufacturer) + " " + capitalize(model);'; do
-  if ! grep -Fq "$device_name_contract" "$MAIN_ACTIVITY"; then
-    printf '%s\n' "MainActivity must keep device-name fallback contract: $device_name_contract" >&2
+  if ! grep -Fq "$device_name_contract" "$MAIN_ACTIVITY" "$BATTERY_TELEMETRY"; then
+    printf '%s\n' "Battery device-name policy must keep contract: $device_name_contract" >&2
     exit 1
   fi
 done
 
-if ! awk '
-  /public String getDeviceName\(\)/ { in_name = 1 }
-  /private String capitalize\(String s\)/ { in_name = 0 }
-  in_name && /Build\.MANUFACTURER == null/ { manufacturer = NR }
-  in_name && /Build\.MODEL == null/ { model = NR }
-  in_name && /manufacturer\.length\(\) == 0 && model\.length\(\) == 0/ { both_empty = NR }
-  in_name && /return "Unknown";/ { unknown = NR }
-  in_name && /manufacturer\.length\(\) == 0/ && $0 !~ /&& model\.length/ { manufacturer_empty = NR }
-  in_name && /return capitalize\(model\);/ && !model_only { model_only = NR }
-  in_name && /model\.length\(\) == 0/ && $0 !~ /manufacturer\.length.*&&/ { model_empty = NR }
-  in_name && /return capitalize\(manufacturer\);/ { manufacturer_only = NR }
-  in_name && /toLowerCase\(Locale\.US\)\.startsWith/ { prefix = NR }
-  in_name && prefix && /return capitalize\(model\);/ { prefixed_model = NR }
-  in_name && /capitalize\(manufacturer\) \+ " " \+ capitalize\(model\)/ { combined = NR }
-  END {
-    exit !(manufacturer && model && both_empty && unknown && manufacturer_empty &&
-      model_only && model_empty && manufacturer_only && prefix && prefixed_model &&
-      combined && manufacturer < model && model < both_empty && both_empty < unknown &&
-      unknown < manufacturer_empty && manufacturer_empty < model_only &&
-      model_only < model_empty && model_empty < manufacturer_only &&
-      manufacturer_only < prefix && prefix < prefixed_model && prefixed_model < combined)
-  }
-' "$MAIN_ACTIVITY"; then
-  printf '%s\n' "MainActivity must normalize device metadata before ordered fallback rendering." >&2
+if ! grep -Fq 'Character.isISOControl(character)' "$BATTERY_TELEMETRY" || \
+   ! grep -Fq 'Character.getType(character) == Character.FORMAT' "$BATTERY_TELEMETRY"; then
+  printf '%s\n' "Battery vendor labels must reject control and format characters." >&2
   exit 1
 fi
 
@@ -668,24 +651,34 @@ for device_name_plan_contract in \
 done
 
 for fallback_contract in \
-  "private static Long readOneLineCurrent(File source, boolean convertToMillis)" \
+  "interface SourceReader" \
   "if (!source.exists())" \
-  "return OneLineReader.getValue(source, convertToMillis);" \
-  "Long value = null;"; do
+  "return OneLineReader.getValue(source, divisor);" \
+  "BatteryTelemetry.isCurrentPlausible(value)"; do
   if ! grep -Fq "$fallback_contract" "$CURRENT_READER"; then
     printf '%s\n' "CurrentReader must keep source fallback contract: $fallback_contract" >&2
     exit 1
   fi
 done
-if [ "$(grep -Fc 'readOneLineCurrent(' "$CURRENT_READER")" -ne 10 ] || \
-   [ "$(grep -Fc 'return OneLineReader.getValue' "$CURRENT_READER")" -ne 1 ] || \
-   [ "$(grep -Fc 'if (value != null)' "$CURRENT_READER")" -ne 10 ]; then
-  printf '%s\n' "CurrentReader must continue after nullable source reads and return only non-null values." >&2
+if [ "$(grep -Fc 'BatteryTelemetry.isCurrentPlausible(value)' "$CURRENT_READER")" -ne 2 ] || \
+   [ "$(grep -Fc 'sourceReader.read(path, divisor)' "$CURRENT_READER")" -ne 1 ]; then
+  printf '%s\n' "CurrentReader must continue after unavailable or implausible source reads." >&2
   exit 1
 fi
 
-if [ "$(grep -F 'f = new File("/sys/' "$CURRENT_READER" | sed 's/^[[:space:]]*//')" != "$(expected_current_sources)" ]; then
-  printf '%s\n' "CurrentReader must preserve the reviewed sysfs source order." >&2
+for microamp_path in \
+  '/sys/devices/platform/ds2784-battery/getcurrent' \
+  '/sys/devices/platform/i2c-adapter/i2c-0/0-0036/power_supply/ds2746-battery/current_now' \
+  '/sys/devices/platform/i2c-adapter/i2c-0/0-0036/power_supply/battery/current_now' \
+  '/sys/class/power_supply/battery/current_now' \
+  '/sys/class/power_supply/max17042-0/current_now'; do
+  if ! grep -Fq "$microamp_path" "$CURRENT_READER"; then
+    printf '%s\n' "CurrentReader must preserve current source: $microamp_path" >&2
+    exit 1
+  fi
+done
+if ! grep -Fq 'int[] divisors = {1000, 1000, 1000, 1, 1, 1000, 1, 1, 1000};' "$CURRENT_READER"; then
+  printf '%s\n' "CurrentReader must convert standard current_now microamps to milliamps." >&2
   exit 1
 fi
 
@@ -739,9 +732,9 @@ fi
 for pattern in \
   "batteryStatus.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1)" \
   "private static String batteryVoltageText(int millivolts)" \
-  "String.format(Locale.US, \"%.1fV\", millivolts / 1000.0f)" \
+  "return BatteryTelemetry.voltageText(millivolts);" \
   "return \"Unknown\";"; do
-  if ! grep -Fq "$pattern" "$MAIN_ACTIVITY"; then
+  if ! grep -Fq "$pattern" "$MAIN_ACTIVITY" "$BATTERY_TELEMETRY"; then
     printf '%s\n' "Missing voltage display contract: $pattern" >&2
     exit 1
   fi
@@ -750,9 +743,9 @@ done
 for pattern in \
   "batteryCurrentText(CurrentReader.getValue())" \
   "private static String batteryCurrentText(Long currentValue)" \
-  "if (currentValue == null)" \
-  "return String.valueOf(currentValue);"; do
-  if ! grep -Fq "$pattern" "$MAIN_ACTIVITY"; then
+  "return BatteryTelemetry.currentText(currentValue);" \
+  "isCurrentPlausible(Long currentValue)"; do
+  if ! grep -Fq "$pattern" "$MAIN_ACTIVITY" "$BATTERY_TELEMETRY"; then
     printf '%s\n' "Missing current display contract: $pattern" >&2
     exit 1
   fi
@@ -785,19 +778,16 @@ technology_method=$(sed -n \
   "$MAIN_ACTIVITY")
 technology_compact=$(printf '%s\n' "$technology_method" | tr -d '[:space:]')
 for technology_contract in \
-  'Stringtechnology=batteryStatus.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY);' \
-  'if(technology==null){return"Unknown";}' \
-  'StringnormalizedTechnology=technology.trim();' \
-  'if(normalizedTechnology.length()==0){return"Unknown";}' \
-  'returnnormalizedTechnology;'; do
+  'returnBatteryTelemetry.normalizedLabel(' \
+  'batteryStatus.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY));'; do
   if ! printf '%s\n' "$technology_compact" | grep -Fq "$technology_contract"; then
     printf '%s\n' "Battery technology display must keep normalized contract: $technology_contract" >&2
     exit 1
   fi
 done
 
-if printf '%s\n' "$technology_compact" | grep -Fq 'returntechnology;'; then
-  printf '%s\n' "Battery technology display must not return the unnormalized value." >&2
+if ! grep -Fq 'MAX_LABEL_LENGTH = 80' "$BATTERY_TELEMETRY"; then
+  printf '%s\n' "Battery technology display must bound vendor-controlled labels." >&2
   exit 1
 fi
 
@@ -941,23 +931,8 @@ if ! grep -Fq "if (intent == null)" "$BAT_INFO_RECEIVER"; then
   exit 1
 fi
 
-if grep -Fq "(float)(temp / 10)" "$BAT_INFO_RECEIVER"; then
-  printf '%s\n' "Battery info receiver must not truncate tenths before casting temperature." >&2
-  exit 1
-fi
-
-if ! grep -Fq "return temp / 10.0f;" "$BAT_INFO_RECEIVER"; then
-  printf '%s\n' "Battery info receiver must preserve one-decimal temperature values." >&2
-  exit 1
-fi
-
-if ! grep -Fq "!intent.hasExtra(BatteryManager.EXTRA_TEMPERATURE)" "$BAT_INFO_RECEIVER"; then
-  printf '%s\n' "Battery info receiver must explicitly ignore broadcasts without temperature data." >&2
-  exit 1
-fi
-
-if ! grep -Fq "receivedTemperature != Integer.MIN_VALUE" "$BAT_INFO_RECEIVER"; then
-  printf '%s\n' "Battery info receiver must reject invalid temperature sentinels." >&2
+if grep -Eq '(^|[^A-Za-z])(temp|get_temp|receivedTemperature)([^A-Za-z]|$)' "$BAT_INFO_RECEIVER"; then
+  printf '%s\n' "Battery receiver must not retain a duplicate temperature cache." >&2
   exit 1
 fi
 
@@ -970,13 +945,8 @@ for live_status_contract in \
   fi
 done
 
-if ! awk '
-  /public void onReceive\(Context arg0, Intent intent\)/ { in_receive = 1 }
-  in_receive && /batteryStatusListener\.onBatteryStatusChanged\(intent\);/ { callback = NR }
-  in_receive && /!intent\.hasExtra\(BatteryManager\.EXTRA_TEMPERATURE\)/ { temperature_guard = NR }
-  END { exit !(callback && temperature_guard && callback < temperature_guard) }
-' "$BAT_INFO_RECEIVER"; then
-  printf '%s\n' "Battery receiver must deliver full status before applying temperature-only guards." >&2
+if [ "$(grep -Fc 'batteryStatusListener.onBatteryStatusChanged(intent);' "$BAT_INFO_RECEIVER")" -ne 1 ]; then
+  printf '%s\n' "Battery receiver must deliver each non-null full status exactly once." >&2
   exit 1
 fi
 
@@ -997,7 +967,8 @@ if ! awk '
   /private void renderBatteryStatus\(Intent batteryStatus\)/ { in_setup = 0; in_render = 1 }
   /private static Intent batteryStatusIntent\(Context context\)/ { in_render = 0 }
   in_setup && /registerBatteryReceiver\(\);/ { register_receiver = NR }
-  in_setup && /renderBatteryStatus\(batteryStatusIntent\(this\)\);/ { initial_render = NR }
+  /Intent batteryStatus = this\.registerReceiver/ { sticky_register = NR }
+  /renderBatteryStatus\(batteryStatus\);/ { initial_render = NR }
   in_render && /batteryLevelPercent\(batteryStatus\)/ { level = NR }
   in_render && /BatteryManager.EXTRA_STATUS/ { status = NR }
   in_render && /BatteryManager.EXTRA_HEALTH/ { health = NR }
@@ -1006,7 +977,7 @@ if ! awk '
   in_render && /BatteryManager.EXTRA_VOLTAGE/ { voltage = NR }
   in_render && /batteryTechnologyText\(batteryStatus\)/ { technology = NR }
   END {
-    exit !(register_receiver && initial_render && register_receiver < initial_render &&
+    exit !(register_receiver && sticky_register && initial_render && sticky_register < initial_render &&
       level && status && health && plugged && temperature && voltage && technology)
   }
 ' "$MAIN_ACTIVITY"; then
@@ -1051,7 +1022,8 @@ if ! grep -Fq "Integer.MIN_VALUE);" "$MAIN_ACTIVITY"; then
   exit 1
 fi
 
-if ! grep -Fq 'String.format(Locale.US, "%.1f \u2103", temperatureTenths / 10.0f)' "$MAIN_ACTIVITY"; then
+if ! grep -Fq 'return BatteryTelemetry.temperatureText(temperatureTenths);' "$MAIN_ACTIVITY" || \
+   ! grep -Fq 'temperatureTenths < MIN_TEMPERATURE_TENTHS' "$BATTERY_TELEMETRY"; then
   printf '%s\n' "Battery temperature display must preserve one decimal and Celsius units." >&2
   exit 1
 fi

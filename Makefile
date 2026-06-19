@@ -15,6 +15,8 @@ lint:
 	fi
 
 test:
+	$(ROOT)scripts/test-battery-host.sh
+	$(ROOT)scripts/test-battery-mutations.sh
 	@if [ -n "$(ANDROID_SDK)" ] && [ -d "$(ANDROID_SDK)" ]; then \
 		cd $(ROOT) && ANDROID_HOME="$(ANDROID_SDK)" ANDROID_SDK_ROOT="$(ANDROID_SDK)" $(GRADLE) test --no-daemon; \
 	else \

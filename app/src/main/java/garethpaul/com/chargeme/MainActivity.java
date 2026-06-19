@@ -8,10 +8,9 @@ import android.content.IntentFilter;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import java.util.Locale;
 
 
 public class MainActivity extends Activity implements mBatInfoReceiver.BatteryStatusListener{
@@ -24,7 +23,6 @@ public class MainActivity extends Activity implements mBatInfoReceiver.BatterySt
         super.onCreate(savedInstanceState);
         configureActionBar();
         setContentView(R.layout.activity_main);
-        setup();
     }
 
     private void configureActionBar() {
@@ -45,8 +43,8 @@ public class MainActivity extends Activity implements mBatInfoReceiver.BatterySt
 
     @Override
     public void onPause() {
-        super.onPause();
         unregisterBatteryReceiver();
+        super.onPause();
     }
 
     @Override
@@ -58,7 +56,6 @@ public class MainActivity extends Activity implements mBatInfoReceiver.BatterySt
 
     private void setup() {
         registerBatteryReceiver();
-        renderBatteryStatus(batteryStatusIntent(this));
     }
 
     private void renderBatteryStatus(Intent batteryStatus) {
@@ -128,14 +125,9 @@ public class MainActivity extends Activity implements mBatInfoReceiver.BatterySt
     }
 
     private int batteryLevelPercent(Intent batteryStatus) {
-        int rawLevel = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
-        int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-        if (rawLevel < 0 || scale <= 0) {
-            return -1;
-        }
-
-        int percent = Math.round((rawLevel * 100.0f) / scale);
-        return Math.max(0, Math.min(100, percent));
+        return BatteryTelemetry.levelPercent(
+                batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1),
+                batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1));
     }
 
     private static String batteryLevelText(int levelPercent) {
@@ -196,17 +188,8 @@ public class MainActivity extends Activity implements mBatInfoReceiver.BatterySt
             return "Unknown";
         }
 
-        String technology = batteryStatus.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY);
-        if (technology == null) {
-            return "Unknown";
-        }
-
-        String normalizedTechnology = technology.trim();
-        if (normalizedTechnology.length() == 0) {
-            return "Unknown";
-        }
-
-        return normalizedTechnology;
+        return BatteryTelemetry.normalizedLabel(
+                batteryStatus.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY));
     }
 
     private void registerBatteryReceiver() {
@@ -215,9 +198,10 @@ public class MainActivity extends Activity implements mBatInfoReceiver.BatterySt
         }
 
         myBatInfoReceiver = new mBatInfoReceiver(this);
-        this.registerReceiver(this.myBatInfoReceiver,
+        Intent batteryStatus = this.registerReceiver(this.myBatInfoReceiver,
                 new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         batteryReceiverRegistered = true;
+        renderBatteryStatus(batteryStatus);
     }
 
     private void unregisterBatteryReceiver() {
@@ -225,40 +209,18 @@ public class MainActivity extends Activity implements mBatInfoReceiver.BatterySt
             return;
         }
 
-        unregisterReceiver(myBatInfoReceiver);
+        mBatInfoReceiver receiver = myBatInfoReceiver;
         myBatInfoReceiver = null;
         batteryReceiverRegistered = false;
+        try {
+            unregisterReceiver(receiver);
+        } catch (IllegalArgumentException unregisterFailure) {
+            Log.e("ChargeMe", "battery receiver unregister failed");
+        }
     }
 
     public String getDeviceName() {
-        String manufacturer = Build.MANUFACTURER == null ? "" : Build.MANUFACTURER.trim();
-        String model = Build.MODEL == null ? "" : Build.MODEL.trim();
-        if (manufacturer.length() == 0 && model.length() == 0) {
-            return "Unknown";
-        }
-        if (manufacturer.length() == 0) {
-            return capitalize(model);
-        }
-        if (model.length() == 0) {
-            return capitalize(manufacturer);
-        }
-        if (model.toLowerCase(Locale.US).startsWith(manufacturer.toLowerCase(Locale.US))) {
-            return capitalize(model);
-        }
-        return capitalize(manufacturer) + " " + capitalize(model);
-    }
-
-
-    private String capitalize(String s) {
-        if (s == null || s.length() == 0) {
-            return "";
-        }
-        char first = s.charAt(0);
-        if (Character.isUpperCase(first)) {
-            return s;
-        } else {
-            return Character.toUpperCase(first) + s.substring(1);
-        }
+        return BatteryTelemetry.deviceName(Build.MANUFACTURER, Build.MODEL);
     }
 
     public static String batteryTemperature(Context context)
@@ -287,11 +249,7 @@ public class MainActivity extends Activity implements mBatInfoReceiver.BatterySt
     }
 
     private static String batteryTemperatureText(int temperatureTenths) {
-        if (temperatureTenths == Integer.MIN_VALUE) {
-            return "Unknown";
-        }
-
-        return String.format(Locale.US, "%.1f \u2103", temperatureTenths / 10.0f);
+        return BatteryTelemetry.temperatureText(temperatureTenths);
     }
 
     public int getVoltage()
@@ -304,19 +262,11 @@ public class MainActivity extends Activity implements mBatInfoReceiver.BatterySt
     }
 
     private static String batteryVoltageText(int millivolts) {
-        if (millivolts <= 0) {
-            return "Unknown";
-        }
-
-        return String.format(Locale.US, "%.1fV", millivolts / 1000.0f);
+        return BatteryTelemetry.voltageText(millivolts);
     }
 
     private static String batteryCurrentText(Long currentValue) {
-        if (currentValue == null) {
-            return "Unknown";
-        }
-
-        return String.valueOf(currentValue);
+        return BatteryTelemetry.currentText(currentValue);
     }
 
 }

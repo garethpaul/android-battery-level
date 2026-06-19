@@ -1,5 +1,16 @@
 # Changes
 
+## 2026-06-19
+
+- Corrected standard `current_now` sysfs values from microamps to milliamps and
+  preserved fallback when an earlier source is corrupt or implausible.
+- Added bounded telemetry formatting and control/bidirectional-character
+  rejection for local model and battery technology labels.
+- Simplified battery receiver ownership to render the registration-time sticky
+  intent, removed duplicate temperature state, and made unregistration safe.
+- Added 32 host assertions, Android instrumentation coverage, and six hostile
+  mutations. Physical-device and vendor-sysfs validation remains unexecuted.
+
 ## 2026-06-15
 
 - Added an explicit launcher export boundary for the sole `MAIN`/`LAUNCHER`

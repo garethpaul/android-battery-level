@@ -37,13 +37,13 @@ public class OneLineReader {
 		_convertToMillis = convertToMillis;
 	}*/
 
-    public static Long getValue(File _f, boolean _convertToMillis) {
+    public static Long getValue(File source, int divisor) {
 
         String text = null;
         BufferedReader br = null;
 
         try {
-            FileInputStream fs = new FileInputStream(_f);
+            FileInputStream fs = new FileInputStream(source);
             InputStreamReader sr = new InputStreamReader(fs);
             br = new BufferedReader(sr);
 
@@ -64,14 +64,14 @@ public class OneLineReader {
 
         if (text != null) {
             try	{
-                value = Long.parseLong(text);
+                value = Long.parseLong(text.trim());
             } catch (NumberFormatException nfe) 	{
                 Log.e("CurrentWidget", "invalid battery current value");
                 value = null;
             }
 
-            if (_convertToMillis && value != null) {
-                value = value / 1000; // convert to milliampere
+            if (divisor > 1 && value != null) {
+                value = value / divisor;
             }
         }
 

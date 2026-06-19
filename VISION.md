@@ -51,6 +51,10 @@ Priority:
   wrapper
 - Keep exact-commit battery device evidence separate from portable contracts,
   with unexecuted broadcast and current-source scenarios recorded explicitly
+- Keep standard sysfs current units normalized, corrupt sensor ranges rejected,
+  and vendor-controlled labels free of control or bidi formatting characters
+- Keep battery and device metadata local; do not add logging, analytics, or
+  network transmission of diagnostic values
 
 Next priorities:
 

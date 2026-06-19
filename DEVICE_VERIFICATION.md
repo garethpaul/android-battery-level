@@ -34,6 +34,8 @@ Use approved emulator battery controls or naturally observed device states:
 | Temperature absent or invalid | Prior valid live value or `Unknown` is retained. | not run | |
 | Voltage value | Millivolts display as one-decimal volts. | not run | |
 | Technology whitespace | Label normalizes to `Unknown`. | not run | |
+| Extreme temperature or voltage | Display uses `Unknown`, not a plausible-looking extreme. | not run | |
+| Control or bidi vendor label | Model or technology displays `Unknown`. | not run | |
 
 ## Current And Reader Matrix
 
@@ -44,6 +46,8 @@ supply files; emulator results alone are insufficient.
 | --- | --- | --- | --- |
 | First source valid | Current displays from the first reviewed source. | not run | |
 | Earlier source invalid | Reader continues to a later valid source. | not run | |
+| Standard `current_now` source | Microamps convert to milliamps exactly once. | not run | |
+| Earlier source implausible | Reader continues to a later plausible source. | not run | |
 | All sources unavailable | Current displays `Unknown`. | not run | |
 | Read or parse failure | Generic category is logged without path or value. | not run | |
 | Close failure | Generic close category is logged after the read attempt. | not run | |

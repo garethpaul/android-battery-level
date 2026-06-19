@@ -70,6 +70,10 @@ an uncached build still needs HTTPS access to Gradle's distribution service.
 
 - `make check` - runs the source baseline and Android SDK-backed Gradle checks
   when `ANDROID_HOME` or `ANDROID_SDK_ROOT` is configured
+- `scripts/test-battery-host.sh` - runs dependency-free Java behavior tests for
+  telemetry bounds, current units, fallback order, parsing, and vendor labels
+- `scripts/test-battery-mutations.sh` - proves six critical boundary mutations
+  are rejected
 - `scripts/check-baseline.sh` - runs SDK-free battery receiver and resource baseline checks
 - The canonical GitHub Actions workflow installs Android API 22 and build-tools
   24.0.3, selects Java 8, and runs full `make check` on pushes and pull
@@ -104,7 +108,8 @@ privacy-safe evidence, and explicit unexecuted rows.
 - Battery voltage is read from Android in millivolts and displayed as volts
   with one decimal place; non-positive voltage readings display `Unknown`.
 - Battery current uses `Unknown` when the device has no supported current
-  sensor file.
+  sensor file or when a source returns an implausible value. Standard Linux
+  `current_now` microamp values are converted to milliamps before display.
 - Battery current probing continues through the reviewed device-specific
   sources when an earlier existing file cannot be read or parsed.
 - The fallback for missing model metadata preserves generic current probes and
@@ -117,6 +122,9 @@ privacy-safe evidence, and explicit unexecuted rows.
   retain descriptors during live refreshes.
 - Current text-file readers require exact field prefixes before parsing values
   from legacy kernel power-supply files.
+- Battery temperature, voltage, and current reject wide out-of-range values;
+  manufacturer, model, and technology labels reject control and bidirectional
+  format characters. These values remain local and are not logged or sent.
 - Battery level percentages are normalized against Android's reported scale and
   clamped to 0 through 100 before display. Missing or invalid level data is
   displayed as `Unknown` instead of exposing the internal `-1` sentinel.
