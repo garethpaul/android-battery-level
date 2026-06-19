@@ -51,6 +51,12 @@
 - Battery current uses `Unknown` when the device has no supported current sensor file.
 - Current text-file readers require exact field prefixes before parsing values from legacy kernel power-supply files.
 - Battery level percentages are normalized against Android's reported scale and clamped to 0 through 100 before display.
+- Android's unavailable battery-level sentinel remains internal; the UI displays
+  `Unknown` and uses the neutral battery icon instead of exposing `-1`.
+- Unavailable charging-source data displays as `Unknown`; only Android's
+  explicit zero value is presented as `On Battery`.
+- Keep the explicit launcher export boundary on `.MainActivity`, which owns the
+  sole `MAIN`/`LAUNCHER` filter; do not export unrelated components.
 
 ## Agent workflow
 

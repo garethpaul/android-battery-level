@@ -17,31 +17,54 @@ The current focus is:
 
 Priority:
 
+- Keep the explicit launcher export boundary limited to `.MainActivity` and
+  keep unrelated Android components private
 - Preserve the documented legacy Android build stack
 - Keep broadcast receiver lifecycle handling correct
 - Maintain an SDK-free baseline check for quick verification
 - Keep displayed battery values clear and traceable to Android system inputs
 - Keep state and technology fields populated from battery broadcast extras
+- Keep battery technology labels trimmed with an `Unknown` fallback for
+  whitespace-only values
+- Keep unavailable charging-source data distinct from a confirmed unplugged
+  state
 - Keep sticky battery intent helper paths safe when broadcasts are unavailable
 - Keep receiver-backed temperature reads null-safe and one-decimal accurate
 - Keep visible temperature synchronized with valid live battery broadcasts
+- Refresh the full battery display from each live broadcast while the activity
+  remains visible
 - Distinguish unavailable temperature data from a real zero-degree reading
 - Keep normalized battery percentages clamped to the user-visible display range
 - Keep displayed battery units converted before presentation
+- Keep non-positive voltage readings on the `Unknown` fallback
 - Keep unavailable battery current readings clear instead of exposing raw null
   values
 - Keep current text-file parsing constrained to exact field prefixes
+- Ensure missing model metadata preserves generic current probes
+- Battery text readers close from finally blocks so failed sysfs reads cannot
+  accumulate open descriptors
 - Keep legacy action-bar presentation optional so theme changes do not crash
   startup
 - Keep local battery diagnostic state out of Android backups by default
 - Keep the SDK-free `make check` baseline running in GitHub Actions
+- Keep the legacy Gradle runtime isolated behind a checksum-verified generated
+  wrapper
+- Keep exact-commit battery device evidence separate from portable contracts,
+  with unexecuted broadcast and current-source scenarios recorded explicitly
+- Keep standard sysfs current units normalized, corrupt sensor ranges rejected,
+  and vendor-controlled labels free of control or bidi formatting characters
+- Keep battery and device metadata local; do not add logging, analytics, or
+  network transmission of diagnostic values
 
 Next priorities:
 
-- Modernize Gradle, SDK levels, and Android plugin versions in a dedicated pass
+- Evaluate Gradle runtime, SDK level, and Android plugin modernization together
+  in a dedicated compatibility pass; wrapper bootstrap hardening is complete
 - Add tests for battery formatting and lifecycle edge cases
 - Review behavior across charging states and newer Android versions
 - Improve UI labels without changing the sample's simple purpose
+- Execute the battery device verification matrix across representative charging
+  states and Android versions with privacy-safe evidence
 
 Contribution rules:
 

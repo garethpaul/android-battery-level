@@ -2,7 +2,7 @@
 
 ANDROID_HOME ?=
 ANDROID_SDK_ROOT ?=
-ROOT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+override ROOT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 ANDROID_SDK := $(if $(ANDROID_HOME),$(ANDROID_HOME),$(ANDROID_SDK_ROOT))
 GRADLE ?= $(ROOT)gradlew
 
@@ -15,6 +15,8 @@ lint:
 	fi
 
 test:
+	$(ROOT)scripts/test-battery-host.sh
+	$(ROOT)scripts/test-battery-mutations.sh
 	@if [ -n "$(ANDROID_SDK)" ] && [ -d "$(ANDROID_SDK)" ]; then \
 		cd $(ROOT) && ANDROID_HOME="$(ANDROID_SDK)" ANDROID_SDK_ROOT="$(ANDROID_SDK)" $(GRADLE) test --no-daemon; \
 	else \

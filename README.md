@@ -3,6 +3,11 @@
 <!-- README-OVERVIEW-IMAGE -->
 ![Project overview](docs/readme-overview.svg)
 
+## Device Preview
+
+<!-- DEVICE-PREVIEW-IMAGE -->
+![Device preview](docs/device-preview.svg)
+
 ## Overview
 
 `garethpaul/android-battery-level` is an Android application or sample. Get the Android Battery Level. 
@@ -35,7 +40,7 @@ Additional scan context:
 
 - Git
 - Android Studio or a compatible Android SDK
-- Gradle or the checked-in Gradle wrapper when present
+- Java 8 and the checked-in Gradle wrapper
 
 ### Setup
 
@@ -50,6 +55,13 @@ scripts/check-baseline.sh
 
 The setup commands above are derived from repository files. Legacy mobile, Python, or JavaScript samples may require older SDKs or package versions than a modern workstation uses by default.
 
+The checked-in wrapper still executes Gradle 2.2.1 for compatibility. Its
+current bootstrap verifies the downloaded all distribution with
+`distributionSha256Sum`, and the SDK-free baseline verifies the checked-in
+wrapper JAR and generated launchers. This authenticates the expected wrapper
+and distribution bytes but does not make the first build offline-reproducible;
+an uncached build still needs HTTPS access to Gradle's distribution service.
+
 ## Running or Using the Project
 
 - Use Android Studio to open the project or run `./gradlew assembleDebug` when the Android SDK is configured.
@@ -58,44 +70,75 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 - `make check` - runs the source baseline and Android SDK-backed Gradle checks
   when `ANDROID_HOME` or `ANDROID_SDK_ROOT` is configured
+- `scripts/test-battery-host.sh` - runs dependency-free Java behavior tests for
+  telemetry bounds, current units, fallback order, parsing, and vendor labels
+- `scripts/test-battery-mutations.sh` - proves six critical boundary mutations
+  are rejected
 - `scripts/check-baseline.sh` - runs SDK-free battery receiver and resource baseline checks
-- GitHub Actions runs `make check` on pushes and pull requests. On hosted
-  Linux runners without the legacy Android SDK, the SDK-free baseline still
-  runs and Gradle gates report clear skips. The workflow uses Ubuntu 24.04 and
-  cancels superseded runs.
-- Local Gradle checks accept `ANDROID_HOME` or `ANDROID_SDK_ROOT`; CI clears
-  both variables to preserve the documented static-only boundary.
+- The canonical GitHub Actions workflow installs Android API 22 and build-tools
+  24.0.3, selects Java 8, and runs full `make check` on pushes and pull
+  requests. The workflow uses Ubuntu 24.04 and cancels superseded runs.
+- Local Gradle checks accept `ANDROID_HOME` or `ANDROID_SDK_ROOT` and match the
+  hosted toolchain contract.
 - The baseline check protects battery level scaling, icon thresholds, receiver
   lifecycle, and voltage unit display. Normalized battery percentages are
   clamped to the 0 through 100 display range before icon threshold selection.
 - The battery state and technology fields are populated from Android's battery
   status broadcast instead of leaving first-render placeholders in place.
 - `./gradlew lint --no-daemon`, `./gradlew test --no-daemon`, and `./gradlew assembleDebug --no-daemon` when the Android SDK is configured
+- [`docs/plans/2026-06-12-gradle-wrapper-verification.md`](docs/plans/2026-06-12-gradle-wrapper-verification.md)
+  records the wrapper provenance, compatibility boundary, and verification
+  evidence.
 
-When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
+The legacy target SDK produces one documented `OldTargetApi` compatibility
+warning. When the required SDK is unavailable locally, use static checks and
+source review first, then rely on the hosted matching platform toolchain.
+
+Use [`DEVICE_VERIFICATION.md`](DEVICE_VERIFICATION.md) for the exact-commit
+emulator/device matrix. It covers battery broadcasts, unavailable values,
+charging states, current-source fallback, reader cleanup, lifecycle,
+privacy-safe evidence, and explicit unexecuted rows.
 
 ## Configuration and Secrets
 
 - No required secret or credential file was identified in the repository scan. If you add integrations later, keep secrets out of git.
 - The legacy Android build is pinned to Android build-tools 24.0.3 for this baseline.
+- The legacy Android plugin uses its non-queued PNG cruncher because the newer
+  concurrent cruncher can fail nondeterministically on clean hosted builds.
 - Battery voltage is read from Android in millivolts and displayed as volts
-  with one decimal place.
+  with one decimal place; non-positive voltage readings display `Unknown`.
 - Battery current uses `Unknown` when the device has no supported current
-  sensor file.
+  sensor file or when a source returns an implausible value. Standard Linux
+  `current_now` microamp values are converted to milliamps before display.
+- Battery current probing continues through the reviewed device-specific
+  sources when an earlier existing file cannot be read or parsed.
+- The fallback for missing model metadata preserves generic current probes and
+  displays `Unknown` only when no supported source succeeds.
+- During display rendering, missing device identity metadata falls back to the available value or `Unknown`
+  instead of aborting otherwise valid battery status updates.
+- Generic battery reader failure logs retain read-versus-parse categories
+  without recording kernel paths, malformed sensor values, or stack traces.
+- Battery text readers close from finally blocks so sysfs read failures do not
+  retain descriptors during live refreshes.
 - Current text-file readers require exact field prefixes before parsing values
   from legacy kernel power-supply files.
+- Battery temperature, voltage, and current reject wide out-of-range values;
+  manufacturer, model, and technology labels reject control and bidirectional
+  format characters. These values remain local and are not logged or sent.
 - Battery level percentages are normalized against Android's reported scale and
   clamped to 0 through 100 before display. Missing or invalid level data is
   displayed as `Unknown` instead of exposing the internal `-1` sentinel.
 - Battery state, charging source, health, and technology display text are
   derived from Android battery broadcast extras, with `Unknown` fallbacks for
-  missing fields.
+  missing fields. Technology values are trimmed before display, and values
+  containing only whitespace use `Unknown`. Unavailable charging-source data
+  remains `Unknown`; only the explicit unplugged value is displayed as `On Battery`.
 - Sticky battery intent helper paths tolerate missing contexts or broadcasts
   and keep display helpers on `Unknown` fallbacks instead of crashing.
-- Battery receiver temperature updates ignore missing broadcast intents and
-  missing temperature extras, preserve the previous valid receiver value, and
-  reject invalid sentinels. Valid broadcasts immediately refresh the visible
-  temperature through the activity listener.
+- Battery receiver updates ignore missing broadcast intents, refresh the full
+  battery display from each live broadcast, preserve the previous valid
+  receiver temperature when its extra is absent, and reject invalid
+  temperature sentinels.
 - Battery temperature display uses `Unknown` when the sticky broadcast omits
   temperature data and formats valid tenths as one-decimal Celsius values.
 - The activity guards nullable action-bar access before applying the battery
@@ -105,6 +148,9 @@ When the required SDK or runtime is unavailable, use static checks and source re
 
 ## Security and Privacy Notes
 
+- The explicit launcher export boundary is limited to `.MainActivity` and its
+  existing `MAIN`/`LAUNCHER` intent filter.
+
 - Review changes touching network requests, sockets, or service endpoints; examples from the scan include app/src/androidTest/java/garethpaul/com/chargeme/ApplicationTest.java, app/src/main/AndroidManifest.xml, app/src/main/java/garethpaul/com/chargeme/BattAttrTextReader.java, app/src/main/java/garethpaul/com/chargeme/CurrentReader.java, and 4 more.
 - Review changes touching mobile permissions or privacy-sensitive device data; examples from the scan include docs/plans/2026-06-08-battery-receiver-lifecycle.md, gradlew.
 - Review changes touching file, media, JSON, XML, CSV, OCR, or data parsing; examples from the scan include app/lint.xml, app/src/main/AndroidManifest.xml, scripts/check-baseline.sh.
@@ -112,11 +158,16 @@ When the required SDK or runtime is unavailable, use static checks and source re
 
 ## Maintenance Notes
 
+- See `docs/plans/2026-06-14-battery-device-verification-checklist.md` for the
+  battery/device evidence matrix and runtime non-claims.
+
 - This looks like a legacy Android project or sample. Expect Android SDK, Gradle, and support-library versions to matter.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-08-battery-check-wrapper.md` for the root
   verification wrapper baseline.
+- See `docs/plans/2026-06-12-hosted-android-verification.md` for the complete
+  hosted Android lint, test, and build gate.
 - See `docs/plans/2026-06-09-battery-voltage-display-contracts.md` for the
   voltage display contract.
 - See `docs/plans/2026-06-09-battery-actionbar-guard.md` for the nullable
@@ -129,6 +180,10 @@ When the required SDK or runtime is unavailable, use static checks and source re
   percentage display range contract.
 - See `docs/plans/2026-06-12-battery-level-unavailable-display.md` for the
   unavailable battery-level display contract.
+- See `docs/plans/2026-06-13-battery-reader-log-redaction.md` for generic battery
+  reader failure logs and kernel-path redaction.
+- See `docs/plans/2026-06-13-battery-plugged-unavailable-display.md` for the
+  unavailable charging-source data display contract.
 - See `docs/plans/2026-06-09-battery-status-technology-display.md` for the
   battery state and technology display contract.
 - See `docs/plans/2026-06-09-battery-backup-policy.md` for the Android backup
