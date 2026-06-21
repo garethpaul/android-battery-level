@@ -4,6 +4,19 @@ set -eu
 ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 WORK_DIR=${TMPDIR:-/tmp}/android-battery-mutations.$$
 trap 'rm -rf "$WORK_DIR"' EXIT HUP INT TERM
+mkdir -p "$WORK_DIR"
+
+run_preflight() {
+  preflight_log="$WORK_DIR/preflight.log"
+  if "$ROOT_DIR/scripts/test-battery-host.sh" >"$preflight_log" 2>&1; then
+    return
+  else
+    preflight_status=$?
+  fi
+  cat "$preflight_log" >&2
+  printf '%s\n' "Battery host tests must pass before mutation testing." >&2
+  exit "$preflight_status"
+}
 
 run_mutation() {
   name=$1
@@ -28,12 +41,32 @@ run_mutation() {
   chmod +x "$mutation_dir/scripts/test-battery-host.sh"
 
   perl -0pi -e "$expression" "$mutation_dir/$target"
-  if "$mutation_dir/scripts/test-battery-host.sh" >/dev/null 2>&1; then
-    printf '%s\n' "Mutation survived: $name" >&2
-    exit 1
+  mutation_log="$mutation_dir/host-test.log"
+  if "$mutation_dir/scripts/test-battery-host.sh" >"$mutation_log" 2>&1; then
+    mutation_status=0
+  else
+    mutation_status=$?
   fi
+
+  case "$mutation_status" in
+    0)
+      printf '%s\n' "Mutation survived: $name" >&2
+      exit 1
+      ;;
+    42)
+      if grep -Fq "java.lang.AssertionError" "$mutation_log" && \
+         grep -Fq "garethpaul.com.chargeme.BatteryHostTest" "$mutation_log"; then
+        return
+      fi
+      ;;
+  esac
+
+  printf '%s\n' "Mutation infrastructure failed: $name (status $mutation_status)" >&2
+  cat "$mutation_log" >&2
+  exit "$mutation_status"
 }
 
+run_preflight
 run_mutation current-unit 's/int\[\] divisors = \{1000,/int[] divisors = {1,/' \
   app/src/main/java/garethpaul/com/chargeme/CurrentReader.java
 run_mutation current-range 's/MAX_CURRENT_MILLIAMPS = 1000000L/MAX_CURRENT_MILLIAMPS = Long.MAX_VALUE/' \

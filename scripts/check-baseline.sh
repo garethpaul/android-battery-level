@@ -42,11 +42,13 @@ WRAPPER_JAR="$ROOT_DIR/gradle/wrapper/gradle-wrapper.jar"
 WRAPPER_PROPERTIES="$ROOT_DIR/gradle/wrapper/gradle-wrapper.properties"
 HOST_TEST="$ROOT_DIR/scripts/test-battery-host.sh"
 MUTATION_TEST="$ROOT_DIR/scripts/test-battery-mutations.sh"
+MUTATION_GATE_TEST="$ROOT_DIR/scripts/test-battery-mutation-gate.sh"
 
 for required_path in \
   "$BATTERY_TELEMETRY" \
   "$HOST_TEST" \
   "$MUTATION_TEST" \
+  "$MUTATION_GATE_TEST" \
   "$ROOT_DIR/DEVICE_VERIFICATION.md" \
   "$DEVICE_VERIFICATION_PLAN" \
   "$MODEL_FALLBACK_PLAN" \
@@ -59,10 +61,50 @@ for required_path in \
 done
 
 if [ "$(grep -Fc '$(ROOT)scripts/test-battery-host.sh' "$ROOT_DIR/Makefile")" -ne 1 ] || \
-   [ "$(grep -Fc '$(ROOT)scripts/test-battery-mutations.sh' "$ROOT_DIR/Makefile")" -ne 1 ]; then
-  printf '%s\n' "Makefile test must run host behavior and mutation gates." >&2
+   [ "$(grep -Fc '$(ROOT)scripts/test-battery-mutations.sh' "$ROOT_DIR/Makefile")" -ne 1 ] || \
+   [ "$(grep -Fc '$(ROOT)scripts/test-battery-mutation-gate.sh' "$ROOT_DIR/Makefile")" -ne 1 ]; then
+  printf '%s\n' "Makefile test must run host behavior, mutation, and mutation-runner regression gates." >&2
   exit 1
 fi
+
+if ! sh -n "$MUTATION_TEST" || \
+   ! grep -Fq 'if "$ROOT_DIR/scripts/test-battery-host.sh" >"$preflight_log" 2>&1; then' "$MUTATION_TEST" || \
+   ! grep -Fq "Battery host tests must pass before mutation testing." "$MUTATION_TEST"; then
+  printf '%s\n' "Battery mutation gate must fail closed when host behavior tests cannot run." >&2
+  exit 1
+fi
+
+if ! awk '
+  /^run_preflight$/ { preflight = NR; preflight_count++ }
+  /^run_mutation current-unit / { first_mutation = NR }
+  END {
+    exit !(preflight_count == 1 && preflight && first_mutation && preflight < first_mutation)
+  }
+' "$MUTATION_TEST"; then
+  printf '%s\n' "Battery mutation gate must prove the unmutated host baseline before mutating." >&2
+  exit 1
+fi
+
+for mutation_runner_contract in \
+  '42)' \
+  'java.lang.AssertionError' \
+  'garethpaul.com.chargeme.BatteryHostTest' \
+  'Mutation infrastructure failed: $name (status $mutation_status)'; do
+  if ! grep -Fq "$mutation_runner_contract" "$MUTATION_TEST"; then
+    printf '%s\n' "Battery mutation gate must distinguish assertion failures from infrastructure failures." >&2
+    exit 1
+  fi
+done
+
+for host_runner_contract in \
+  'java.lang.AssertionError' \
+  'garethpaul.com.chargeme.BatteryHostTest' \
+  'exit 42'; do
+  if ! grep -Fq "$host_runner_contract" "$HOST_TEST"; then
+    printf '%s\n' "Battery host gate must reserve a distinct assertion-failure status." >&2
+    exit 1
+  fi
+done
 
 for device_contract in \
   'commit SHA and pull request' \
