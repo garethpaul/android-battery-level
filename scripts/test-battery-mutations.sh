@@ -34,6 +34,11 @@ run_mutation() {
   fi
 }
 
+if ! "$ROOT_DIR/scripts/test-battery-host.sh" >/dev/null 2>&1; then
+  printf '%s\n' "Battery host tests must pass before mutation testing." >&2
+  exit 1
+fi
+
 run_mutation current-unit 's/int\[\] divisors = \{1000,/int[] divisors = {1,/' \
   app/src/main/java/garethpaul/com/chargeme/CurrentReader.java
 run_mutation current-range 's/MAX_CURRENT_MILLIAMPS = 1000000L/MAX_CURRENT_MILLIAMPS = Long.MAX_VALUE/' \

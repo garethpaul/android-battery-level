@@ -64,6 +64,21 @@ if [ "$(grep -Fc '$(ROOT)scripts/test-battery-host.sh' "$ROOT_DIR/Makefile")" -n
   exit 1
 fi
 
+if ! grep -Fq 'if ! "$ROOT_DIR/scripts/test-battery-host.sh" >/dev/null 2>&1; then' "$MUTATION_TEST" || \
+   ! grep -Fq "Battery host tests must pass before mutation testing." "$MUTATION_TEST"; then
+  printf '%s\n' "Battery mutation gate must fail closed when host behavior tests cannot run." >&2
+  exit 1
+fi
+
+if ! awk '
+  /scripts\/test-battery-host\.sh" >\/dev\/null 2>&1/ { preflight = NR }
+  /run_mutation current-unit/ { first_mutation = NR }
+  END { exit !(preflight && first_mutation && preflight < first_mutation) }
+' "$MUTATION_TEST"; then
+  printf '%s\n' "Battery mutation gate must prove the unmutated host baseline before mutating." >&2
+  exit 1
+fi
+
 for device_contract in \
   'commit SHA and pull request' \
   'Missing or invalid level' \
