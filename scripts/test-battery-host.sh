@@ -7,7 +7,7 @@ trap 'rm -rf "$BUILD_DIR"' EXIT HUP INT TERM
 
 mkdir -p "$BUILD_DIR/classes"
 
-if javac -source 7 -target 7 -d "$BUILD_DIR/classes" \
+if javac -source 7 -target 7 -encoding UTF-8 -d "$BUILD_DIR/classes" \
     "$ROOT_DIR/host-tests/src/android/os/Build.java" \
     "$ROOT_DIR/host-tests/src/android/util/Log.java" \
     "$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java" \
