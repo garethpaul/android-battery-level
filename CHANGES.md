@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-25
+
+- Made the dependency-free battery host test compile its Celsius fixture with
+  an explicit UTF-8 source encoding instead of inheriting the host locale.
+
 ## 2026-06-19
 
 - Corrected standard `current_now` sysfs values from microamps to milliamps and

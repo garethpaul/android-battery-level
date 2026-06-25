@@ -97,6 +97,7 @@ for mutation_runner_contract in \
 done
 
 for host_runner_contract in \
+  'javac -source 7 -target 7 -encoding UTF-8 -d "$BUILD_DIR/classes"' \
   'java.lang.AssertionError' \
   'garethpaul.com.chargeme.BatteryHostTest' \
   'exit 42'; do
