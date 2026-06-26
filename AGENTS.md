@@ -50,6 +50,9 @@
 - Battery voltage is read from Android in millivolts and displayed as volts with one decimal place.
 - Battery current uses `Unknown` when the device has no supported current sensor file.
 - Current text-file readers require exact field prefixes before parsing values from legacy kernel power-supply files.
+- Manufacturer, model, and technology labels must be scanned by Unicode code
+  point, reject control/format content, and use `Unknown` when separators or
+  reviewed default-ignorable marks contain no visible base character.
 - Battery level percentages are normalized against Android's reported scale and clamped to 0 through 100 before display.
 - Android's unavailable battery-level sentinel remains internal; the UI displays
   `Unknown` and uses the neutral battery icon instead of exposing `-1`.

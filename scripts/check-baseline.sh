@@ -27,6 +27,7 @@ DEVICE_VERIFICATION_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-device-verific
 MODEL_FALLBACK_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-model-fallback.md"
 ZERO_VOLTAGE_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-zero-voltage-fallback.md"
 DEVICE_NAME_FALLBACK_PLAN="$ROOT_DIR/docs/plans/2026-06-15-battery-device-name-fallback.md"
+UNICODE_LABEL_PLAN="$ROOT_DIR/docs/plans/2026-06-26-unicode-visible-battery-labels.md"
 LAUNCHER_EXPORT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-explicit-launcher-export.md"
 PLUGGED_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-plugged-unavailable-display.md"
 TECHNOLOGY_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-technology-normalization.md"
@@ -53,9 +54,21 @@ for required_path in \
   "$DEVICE_VERIFICATION_PLAN" \
   "$MODEL_FALLBACK_PLAN" \
   "$ZERO_VOLTAGE_PLAN" \
-  "$DEVICE_NAME_FALLBACK_PLAN"; do
+  "$DEVICE_NAME_FALLBACK_PLAN" \
+  "$UNICODE_LABEL_PLAN"; do
   if [ ! -f "$required_path" ]; then
     printf '%s\n' "Required file is missing: ${required_path#"$ROOT_DIR/"}" >&2
+    exit 1
+  fi
+done
+
+for unicode_label_plan_contract in \
+  'Status: Completed' \
+  '41 assertions' \
+  'twelve-case mutation suite' \
+  'No local Android SDK was configured'; do
+  if ! grep -Fq "$unicode_label_plan_contract" "$UNICODE_LABEL_PLAN"; then
+    printf '%s\n' "Unicode-visible battery label plan missing evidence: $unicode_label_plan_contract" >&2
     exit 1
   fi
 done
@@ -668,11 +681,35 @@ for device_name_contract in \
   fi
 done
 
-if ! grep -Fq 'Character.isISOControl(character)' "$BATTERY_TELEMETRY" || \
-   ! grep -Fq 'Character.getType(character) == Character.FORMAT' "$BATTERY_TELEMETRY"; then
+if ! grep -Fq 'normalized.codePointAt(index)' "$BATTERY_TELEMETRY" || \
+   ! grep -Fq 'Character.charCount(codePoint)' "$BATTERY_TELEMETRY" || \
+   ! grep -Fq 'Character.isISOControl(codePoint)' "$BATTERY_TELEMETRY" || \
+   ! grep -Fq 'Character.getType(codePoint) == Character.FORMAT' "$BATTERY_TELEMETRY" || \
+   ! grep -Fq 'Character.isWhitespace(codePoint)' "$BATTERY_TELEMETRY" || \
+   ! grep -Fq 'Character.isSpaceChar(codePoint)' "$BATTERY_TELEMETRY" || \
+   ! grep -Fq 'codePoint == 0x034F' "$BATTERY_TELEMETRY" || \
+   ! grep -Fq 'codePoint >= 0xFE00 && codePoint <= 0xFE0F' "$BATTERY_TELEMETRY" || \
+   ! grep -Fq 'codePoint >= 0xE0100 && codePoint <= 0xE01EF' "$BATTERY_TELEMETRY" || \
+   ! grep -Fq 'return hasVisibleContent ? normalized : UNKNOWN;' "$BATTERY_TELEMETRY"; then
   printf '%s\n' "Battery vendor labels must reject control and format characters." >&2
   exit 1
 fi
+
+for label_regression in \
+  'BatteryTelemetry.normalizedLabel("\u00A0\u2003")' \
+  'BatteryTelemetry.normalizedLabel("\u034F")' \
+  'BatteryTelemetry.normalizedLabel("\u180B")' \
+  'BatteryTelemetry.normalizedLabel("\uFE0F")' \
+  'BatteryTelemetry.normalizedLabel("\uDB40\uDD00")' \
+  'BatteryTelemetry.normalizedLabel("\uDB40\uDC01")' \
+  'BatteryTelemetry.normalizedLabel("Li-ion\uFE0F")' \
+  'BatteryTelemetry.normalizedLabel("Li-ion\uDB40\uDD00")' \
+  'BatteryTelemetry.deviceName("\u00A0", "Pixel")'; do
+  if ! grep -Fq "$label_regression" "$ROOT_DIR/host-tests/src/garethpaul/com/chargeme/BatteryHostTest.java"; then
+    printf '%s\n' "Battery vendor label regression missing: $label_regression" >&2
+    exit 1
+  fi
+done
 
 for device_name_document in "$README" "$SECURITY" "$CHANGES"; do
   if ! grep -Fq "missing device identity metadata falls back to the available value or \`Unknown\`" \

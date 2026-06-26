@@ -26,6 +26,8 @@ Priority:
 - Keep state and technology fields populated from battery broadcast extras
 - Keep battery technology labels trimmed with an `Unknown` fallback for
   whitespace-only values
+- Keep vendor labels code-point-aware and require visible content beyond
+  separators and reviewed default-ignorable marks
 - Keep unavailable charging-source data distinct from a confirmed unplugged
   state
 - Keep sticky battery intent helper paths safe when broadcasts are unavailable

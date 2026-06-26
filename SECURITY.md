@@ -67,6 +67,10 @@ Helpful reports include:
   as a confirmed unplugged state.
 - Battery technology labels are trimmed before display so whitespace-only
   system values retain the `Unknown` fallback instead of rendering blank.
+- Manufacturer, model, and technology labels are scanned as Unicode code
+  points. Control/format content fails closed, and separator- or reviewed
+  default-ignorable-only values display `Unknown` while visible text with
+  variation selectors remains accepted.
 - Refresh the full battery display from each live broadcast so diagnostic
   decisions do not rely on stale level, state, health, charging-source,
   voltage, temperature, or technology rows.
