@@ -24,15 +24,21 @@ run_mutation() {
   target=$3
   mutation_dir="$WORK_DIR/$name"
   mkdir -p "$mutation_dir/app/src/main/java/garethpaul/com/chargeme" \
+    "$mutation_dir/host-tests/src/android/content" \
     "$mutation_dir/host-tests/src/android/os" \
     "$mutation_dir/host-tests/src/android/util" \
     "$mutation_dir/host-tests/src/garethpaul/com/chargeme" \
     "$mutation_dir/scripts"
   cp "$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java" \
     "$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/CurrentReader.java" \
+    "$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/mBatInfoReceiver.java" \
     "$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/OneLineReader.java" \
     "$ROOT_DIR/app/src/main/java/garethpaul/com/chargeme/SMemTextReader.java" \
     "$mutation_dir/app/src/main/java/garethpaul/com/chargeme/"
+  cp "$ROOT_DIR/host-tests/src/android/content/BroadcastReceiver.java" \
+    "$ROOT_DIR/host-tests/src/android/content/Context.java" \
+    "$ROOT_DIR/host-tests/src/android/content/Intent.java" \
+    "$mutation_dir/host-tests/src/android/content/"
   cp "$ROOT_DIR/host-tests/src/android/os/Build.java" "$mutation_dir/host-tests/src/android/os/"
   cp "$ROOT_DIR/host-tests/src/android/util/Log.java" "$mutation_dir/host-tests/src/android/util/"
   cp "$ROOT_DIR/host-tests/src/garethpaul/com/chargeme/BatteryHostTest.java" \
@@ -91,5 +97,7 @@ run_mutation temperature-range 's/MAX_TEMPERATURE_TENTHS = 2000/MAX_TEMPERATURE_
   app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
 run_mutation percentage-clamp 's/Math\.min\(100L, roundedPercent\)/Math.min(101L, roundedPercent)/' \
   app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
+run_mutation receiver-null-intent 's/[[:space:]]*if \(intent == null\) \{[[:space:]]*return;[[:space:]]*\}//' \
+  app/src/main/java/garethpaul/com/chargeme/mBatInfoReceiver.java
 
-printf '%s\n' "Battery mutations: 12 rejected"
+printf '%s\n' "Battery mutations: 13 rejected"

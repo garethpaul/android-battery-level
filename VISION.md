@@ -62,7 +62,8 @@ Next priorities:
 
 - Evaluate Gradle runtime, SDK level, and Android plugin modernization together
   in a dedicated compatibility pass; wrapper bootstrap hardening is complete
-- Add tests for battery formatting and lifecycle edge cases
+- Continue expanding battery formatting tests; receiver delivery edge cases are
+  now covered by the SDK-free host suite
 - Review behavior across charging states and newer Android versions
 - Improve UI labels without changing the sample's simple purpose
 - Execute the battery device verification matrix across representative charging

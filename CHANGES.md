@@ -1,5 +1,59 @@
 # Changes
 
+## 2026-06-26 02:49 - P2 - Execute receiver delivery edge cases on the host
+
+### Summary
+Extended the dependency-free Java suite through the Android broadcast receiver
+adapter so null and non-null delivery boundaries are executable without an SDK.
+
+### Work completed
+- Added minimal host-only Android content stubs for `BroadcastReceiver`,
+  `Context`, and `Intent`.
+- Verified non-null battery intents are forwarded exactly once and by identity.
+- Verified null intents are ignored and a missing listener remains safe.
+- Added a thirteenth hostile mutation that removes the null-intent guard.
+- Kept the documented `onResume`/`onPause` registration scope unchanged.
+
+### Threads
+- Started: receiver delivery edge-case host coverage.
+- Continued: lifecycle testing roadmap — adapter boundaries now execute in the
+  SDK-free suite.
+- Stopped: speculative late-callback production change; official Android
+  guidance supports the existing registration scope and did not establish a
+  defect.
+
+### Files changed
+- `host-tests/src/android/content/` — supplies the minimal receiver compile
+  surface.
+- `host-tests/src/garethpaul/com/chargeme/BatteryHostTest.java` — covers receiver
+  forwarding and null boundaries.
+- `scripts/test-battery-host.sh` and `scripts/test-battery-mutations.sh` — compile
+  the production adapter and prove its null guard.
+- Roadmap, baseline, and plan documentation — record the completed test gap.
+
+### Validation
+- Red-first `scripts/test-battery-host.sh` — failed because Android receiver
+  types were not host-executable, then passed with 45 assertions.
+- `scripts/test-battery-mutations.sh` — thirteen mutations rejected.
+- `scripts/check-baseline.sh` and mutation-runner infrastructure checks — passed.
+- `make lint|test|build|verify|check` from checkout and `/tmp` — passed; local
+  SDK-backed Gradle steps explicitly skipped because no Android SDK is set.
+- Shell syntax and `git diff --check` — passed.
+- Hosted Android, CodeQL, exact-head review, and merge evidence remains the next
+  action for this cycle.
+
+### Bugs / findings
+- P2: the receiver adapter's null-delivery behavior existed only as a static
+  source contract and was not executed by the dependency-free test suite.
+
+### Blockers
+- None for portable verification; local Android SDK availability is checked by
+  the canonical Make gate.
+
+### Next action
+- Run full local and hosted exact-head validation, then review and merge the
+  focused PR.
+
 ## 2026-06-26 02:33 - P2 - Require visible Unicode battery labels
 
 ### Summary

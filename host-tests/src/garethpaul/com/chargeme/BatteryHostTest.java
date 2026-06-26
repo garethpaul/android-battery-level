@@ -1,5 +1,7 @@
 package garethpaul.com.chargeme;
 
+import android.content.Intent;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
@@ -13,6 +15,7 @@ public final class BatteryHostTest {
         testVendorLabelSanitization();
         testCurrentSourceUnitsAndFallbacks();
         testOneLineParsing();
+        testReceiverDeliveryBoundaries();
         System.out.println("BatteryHostTest: " + assertions + " assertions passed");
     }
 
@@ -102,6 +105,28 @@ public final class BatteryHostTest {
                 source.delete();
             }
         }
+    }
+
+    private static void testReceiverDeliveryBoundaries() {
+        final List<Intent> deliveries = new ArrayList<Intent>();
+        mBatInfoReceiver receiver = new mBatInfoReceiver(
+                new mBatInfoReceiver.BatteryStatusListener() {
+                    @Override
+                    public void onBatteryStatusChanged(Intent batteryStatus) {
+                        deliveries.add(batteryStatus);
+                    }
+                });
+        Intent batteryStatus = new Intent();
+
+        receiver.onReceive(null, batteryStatus);
+        assertEquals(1, deliveries.size());
+        assertTrue(deliveries.get(0) == batteryStatus);
+
+        receiver.onReceive(null, null);
+        assertEquals(1, deliveries.size());
+
+        new mBatInfoReceiver(null).onReceive(null, batteryStatus);
+        assertEquals(1, deliveries.size());
     }
 
     private static void assertTrue(boolean condition) {
