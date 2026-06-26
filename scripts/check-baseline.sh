@@ -79,7 +79,8 @@ done
 
 if ! grep -Fq 'receiver-null-intent' "$MUTATION_TEST" || \
    ! grep -Fq 'label-combining-mark' "$MUTATION_TEST" || \
-   ! grep -Fq 'Battery mutations: 14 rejected' "$MUTATION_TEST"; then
+   ! grep -Fq 'label-codepoint-length' "$MUTATION_TEST" || \
+   ! grep -Fq 'Battery mutations: 15 rejected' "$MUTATION_TEST"; then
   printf '%s\n' "Battery receiver boundary must remain mutation-tested." >&2
   exit 1
 fi
@@ -745,6 +746,13 @@ for combining_mark_document in "$ROOT_DIR/AGENTS.md" "$README" "$SECURITY" "$VIS
   fi
 done
 
+for code_point_length_document in "$ROOT_DIR/AGENTS.md" "$README" "$SECURITY" "$VISION" "$CHANGES"; do
+  if ! grep -Fq 'Battery vendor-label length is capped at 80 Unicode code points, so supplementary characters count once instead of as two UTF-16 code units.' "$code_point_length_document"; then
+    printf '%s\n' "$code_point_length_document must document code-point label length." >&2
+    exit 1
+  fi
+done
+
 for device_name_document in "$README" "$SECURITY" "$CHANGES"; do
   if ! grep -Fq "missing device identity metadata falls back to the available value or \`Unknown\`" \
     "$device_name_document"; then
@@ -902,6 +910,24 @@ done
 
 if ! grep -Fq 'MAX_LABEL_LENGTH = 80' "$BATTERY_TELEMETRY"; then
   printf '%s\n' "Battery technology display must bound vendor-controlled labels." >&2
+  exit 1
+fi
+
+if ! grep -Fq 'int codePointCount = 0;' "$BATTERY_TELEMETRY" || \
+   ! grep -Fq 'codePointCount++;' "$BATTERY_TELEMETRY" || \
+   ! grep -Fq 'if (codePointCount > MAX_LABEL_LENGTH)' "$BATTERY_TELEMETRY" || \
+   ! grep -Fq 'repeat("\uD83D\uDD0B", 80)' "$ROOT_DIR/host-tests/src/garethpaul/com/chargeme/BatteryHostTest.java" || \
+   ! grep -Fq 'repeat("\uD83D\uDD0B", 81)' "$ROOT_DIR/host-tests/src/garethpaul/com/chargeme/BatteryHostTest.java"; then
+  printf '%s\n' "Battery vendor-label length must be bounded by Unicode code point." >&2
+  exit 1
+fi
+
+CODE_POINT_LABEL_PLAN="$ROOT_DIR/docs/plans/2026-06-26-code-point-label-length.md"
+if [ ! -f "$CODE_POINT_LABEL_PLAN" ] || \
+   ! grep -Fq 'status: completed' "$CODE_POINT_LABEL_PLAN" || \
+   ! grep -Fq 'red-first host test' "$CODE_POINT_LABEL_PLAN" || \
+   ! grep -Fq 'hostile code-point-length mutation' "$CODE_POINT_LABEL_PLAN"; then
+  printf '%s\n' "Battery code-point label-length plan must record completed verification." >&2
   exit 1
 fi
 

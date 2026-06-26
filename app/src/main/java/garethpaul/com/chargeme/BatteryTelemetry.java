@@ -59,13 +59,18 @@ final class BatteryTelemetry {
         }
 
         String normalized = value.trim();
-        if (normalized.length() == 0 || normalized.length() > MAX_LABEL_LENGTH) {
+        if (normalized.length() == 0) {
             return UNKNOWN;
         }
 
         boolean hasVisibleContent = false;
+        int codePointCount = 0;
         for (int index = 0; index < normalized.length();) {
             int codePoint = normalized.codePointAt(index);
+            codePointCount++;
+            if (codePointCount > MAX_LABEL_LENGTH) {
+                return UNKNOWN;
+            }
             if (Character.isISOControl(codePoint)
                     || Character.getType(codePoint) == Character.FORMAT) {
                 return UNKNOWN;

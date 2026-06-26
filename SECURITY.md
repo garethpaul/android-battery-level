@@ -53,6 +53,7 @@ Helpful reports include:
 - Manufacturer, model, and technology labels reject control and bidirectional
   format characters before display.
 - Combining-mark-only battery labels display as `Unknown` while decomposed accented labels remain intact.
+- Battery vendor-label length is capped at 80 Unicode code points, so supplementary characters count once instead of as two UTF-16 code units.
 - Extreme current, voltage, and temperature values fail closed to `Unknown`.
   Standard Linux `current_now` sources convert microamps to milliamps, and an
   implausible earlier source cannot suppress a later valid source.
