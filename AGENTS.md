@@ -53,6 +53,7 @@
 - Manufacturer, model, and technology labels must be scanned by Unicode code
   point, reject control/format content, and use `Unknown` when separators or
   reviewed default-ignorable marks contain no visible base character.
+- Combining-mark-only battery labels display as `Unknown` while decomposed accented labels remain intact.
 - Battery level percentages are normalized against Android's reported scale and clamped to 0 through 100 before display.
 - Android's unavailable battery-level sentinel remains internal; the UI displays
   `Unknown` and uses the neutral battery icon instead of exposing `-1`.

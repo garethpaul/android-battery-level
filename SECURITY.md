@@ -52,6 +52,7 @@ Helpful reports include:
   permission, analytics, or telemetry path.
 - Manufacturer, model, and technology labels reject control and bidirectional
   format characters before display.
+- Combining-mark-only battery labels display as `Unknown` while decomposed accented labels remain intact.
 - Extreme current, voltage, and temperature values fail closed to `Unknown`.
   Standard Linux `current_now` sources convert microamps to milliamps, and an
   implausible earlier source cannot suppress a later valid source.

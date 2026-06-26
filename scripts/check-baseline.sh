@@ -78,7 +78,8 @@ for receiver_host_contract in \
 done
 
 if ! grep -Fq 'receiver-null-intent' "$MUTATION_TEST" || \
-   ! grep -Fq 'Battery mutations: 13 rejected' "$MUTATION_TEST"; then
+   ! grep -Fq 'label-combining-mark' "$MUTATION_TEST" || \
+   ! grep -Fq 'Battery mutations: 14 rejected' "$MUTATION_TEST"; then
   printf '%s\n' "Battery receiver boundary must remain mutation-tested." >&2
   exit 1
 fi
@@ -708,6 +709,9 @@ if ! grep -Fq 'normalized.codePointAt(index)' "$BATTERY_TELEMETRY" || \
    ! grep -Fq 'Character.getType(codePoint) == Character.FORMAT' "$BATTERY_TELEMETRY" || \
    ! grep -Fq 'Character.isWhitespace(codePoint)' "$BATTERY_TELEMETRY" || \
    ! grep -Fq 'Character.isSpaceChar(codePoint)' "$BATTERY_TELEMETRY" || \
+   ! grep -Fq 'characterType == Character.NON_SPACING_MARK' "$BATTERY_TELEMETRY" || \
+   ! grep -Fq 'characterType == Character.COMBINING_SPACING_MARK' "$BATTERY_TELEMETRY" || \
+   ! grep -Fq 'characterType == Character.ENCLOSING_MARK' "$BATTERY_TELEMETRY" || \
    ! grep -Fq 'codePoint == 0x034F' "$BATTERY_TELEMETRY" || \
    ! grep -Fq 'codePoint >= 0xFE00 && codePoint <= 0xFE0F' "$BATTERY_TELEMETRY" || \
    ! grep -Fq 'codePoint >= 0xE0100 && codePoint <= 0xE01EF' "$BATTERY_TELEMETRY" || \
@@ -719,6 +723,8 @@ fi
 for label_regression in \
   'BatteryTelemetry.normalizedLabel("\u00A0\u2003")' \
   'BatteryTelemetry.normalizedLabel("\u034F")' \
+  'BatteryTelemetry.normalizedLabel("\u0301")' \
+  'BatteryTelemetry.normalizedLabel("Cafe\u0301")' \
   'BatteryTelemetry.normalizedLabel("\u180B")' \
   'BatteryTelemetry.normalizedLabel("\uFE0F")' \
   'BatteryTelemetry.normalizedLabel("\uDB40\uDD00")' \
@@ -728,6 +734,13 @@ for label_regression in \
   'BatteryTelemetry.deviceName("\u00A0", "Pixel")'; do
   if ! grep -Fq "$label_regression" "$ROOT_DIR/host-tests/src/garethpaul/com/chargeme/BatteryHostTest.java"; then
     printf '%s\n' "Battery vendor label regression missing: $label_regression" >&2
+    exit 1
+  fi
+done
+
+for combining_mark_document in "$ROOT_DIR/AGENTS.md" "$README" "$SECURITY" "$VISION" "$CHANGES"; do
+  if ! grep -Fq "Combining-mark-only battery labels display as \`Unknown\` while decomposed accented labels remain intact" "$combining_mark_document"; then
+    printf '%s\n' "$combining_mark_document must document combining-mark-only label rejection." >&2
     exit 1
   fi
 done

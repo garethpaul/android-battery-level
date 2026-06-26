@@ -28,6 +28,7 @@ Priority:
   whitespace-only values
 - Keep vendor labels code-point-aware and require visible content beyond
   separators and reviewed default-ignorable marks
+- Combining-mark-only battery labels display as `Unknown` while decomposed accented labels remain intact.
 - Keep unavailable charging-source data distinct from a confirmed unplugged
   state
 - Keep sticky battery intent helper paths safe when broadcasts are unavailable

@@ -112,8 +112,12 @@ final class BatteryTelemetry {
     }
 
     private static boolean isInvisibleLabelCodePoint(int codePoint) {
+        int characterType = Character.getType(codePoint);
         return Character.isWhitespace(codePoint)
                 || Character.isSpaceChar(codePoint)
+                || characterType == Character.NON_SPACING_MARK
+                || characterType == Character.COMBINING_SPACING_MARK
+                || characterType == Character.ENCLOSING_MARK
                 || codePoint == 0x034F
                 || (codePoint >= 0x180B && codePoint <= 0x180D)
                 || (codePoint >= 0xFE00 && codePoint <= 0xFE0F)
