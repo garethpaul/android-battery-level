@@ -41,10 +41,19 @@ public final class BatteryHostTest {
         assertEquals("Li-ion", BatteryTelemetry.normalizedLabel("  Li-ion  "));
         assertEquals("Unknown", BatteryTelemetry.normalizedLabel("\u202Etxt"));
         assertEquals("Unknown", BatteryTelemetry.normalizedLabel("model\nspoof"));
+        assertEquals("Unknown", BatteryTelemetry.normalizedLabel("\u00A0\u2003"));
+        assertEquals("Unknown", BatteryTelemetry.normalizedLabel("\u034F"));
+        assertEquals("Unknown", BatteryTelemetry.normalizedLabel("\u180B"));
+        assertEquals("Unknown", BatteryTelemetry.normalizedLabel("\uFE0F"));
+        assertEquals("Unknown", BatteryTelemetry.normalizedLabel("\uDB40\uDD00"));
+        assertEquals("Unknown", BatteryTelemetry.normalizedLabel("\uDB40\uDC01"));
+        assertEquals("Li-ion\uFE0F", BatteryTelemetry.normalizedLabel("Li-ion\uFE0F"));
+        assertEquals("Li-ion\uDB40\uDD00", BatteryTelemetry.normalizedLabel("Li-ion\uDB40\uDD00"));
         assertEquals("Google Pixel", BatteryTelemetry.deviceName("google", "Pixel"));
         assertEquals("Google Pixel", BatteryTelemetry.deviceName("google", "pixel"));
         assertEquals("Google Pixel", BatteryTelemetry.deviceName("Google", "google Pixel"));
         assertEquals("Unknown", BatteryTelemetry.deviceName("\u202EelgooG", "Pixel"));
+        assertEquals("Unknown", BatteryTelemetry.deviceName("\u00A0", "Pixel"));
         assertEquals("Unknown", BatteryTelemetry.deviceName("", "\n"));
     }
 

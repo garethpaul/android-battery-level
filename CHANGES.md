@@ -1,5 +1,62 @@
 # Changes
 
+## 2026-06-26 02:33 - P2 - Require visible Unicode battery labels
+
+### Summary
+Hardened manufacturer, model, and battery technology normalization so Unicode
+separator-only, reviewed default-ignorable-only, and supplementary format-only
+values display `Unknown` instead of blank or misleading local metadata.
+
+### Work completed
+- Replaced UTF-16 `char` scanning with Java 7-compatible Unicode code-point
+  traversal.
+- Preserved fail-closed control and format rejection across supplementary code
+  points.
+- Required at least one visible base code point beyond Unicode whitespace,
+  separators, CGJ, and variation-selector ranges.
+- Preserved visible text carrying a variation selector.
+- Expanded the dependency-free host suite and mutation gate.
+
+### Threads
+- Started: none.
+- Continued: direct telemetry-boundary audit — implementation and focused
+  regression coverage complete.
+- Stopped: none.
+
+### Files changed
+- `app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java` — adds the
+  code-point-aware visible-label policy.
+- `host-tests/src/garethpaul/com/chargeme/BatteryHostTest.java` — covers Unicode
+  separators, CGJ, variation selectors, supplementary format content, and
+  device-name fail-closed behavior.
+- `scripts/check-baseline.sh` and `scripts/test-battery-mutations.sh` — enforce
+  and mutation-test the new boundary.
+- Documentation and plan files — record the local-only display policy.
+
+### Validation
+- Red-first `LC_ALL=C scripts/test-battery-host.sh` — failed on Unicode
+  separator-only content, then passed with 41 assertions after implementation.
+- `scripts/check-baseline.sh` — passed.
+- `scripts/test-battery-mutations.sh` — twelve mutations rejected.
+- `C` and `C.UTF-8` host and full Make matrices — passed.
+- `make lint|test|build|verify|check` from checkout and `/tmp` — passed; local
+  SDK-backed Gradle steps explicitly skipped because no Android SDK is set.
+- Mutation-runner infrastructure checks, shell syntax, and `git diff --check` —
+  passed.
+- Hosted Android, CodeQL, exact-head review, and merge evidence remains the next
+  action for this cycle.
+
+### Bugs / findings
+- P2: the previous `char` loop missed supplementary format code points and
+  treated Unicode separator/default-ignorable-only strings as visible labels.
+
+### Blockers
+- None for portable verification; local Android SDK availability is checked by
+  the canonical Make gate.
+
+### Next action
+- Run hosted exact-head validation, then review and merge the focused PR.
+
 ## 2026-06-25
 
 - Made the dependency-free battery host test compile its Celsius fixture with

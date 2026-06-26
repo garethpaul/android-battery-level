@@ -72,7 +72,7 @@ an uncached build still needs HTTPS access to Gradle's distribution service.
   when `ANDROID_HOME` or `ANDROID_SDK_ROOT` is configured
 - `scripts/test-battery-host.sh` - runs dependency-free Java behavior tests for
   telemetry bounds, current units, fallback order, parsing, and vendor labels
-- `scripts/test-battery-mutations.sh` - proves six critical boundary mutations
+- `scripts/test-battery-mutations.sh` - proves twelve critical boundary mutations
   are rejected
 - `scripts/check-baseline.sh` - runs SDK-free battery receiver and resource baseline checks
 - The canonical GitHub Actions workflow installs Android API 22 and build-tools
@@ -123,8 +123,11 @@ privacy-safe evidence, and explicit unexecuted rows.
 - Current text-file readers require exact field prefixes before parsing values
   from legacy kernel power-supply files.
 - Battery temperature, voltage, and current reject wide out-of-range values;
-  manufacturer, model, and technology labels reject control and bidirectional
-  format characters. These values remain local and are not logged or sent.
+  manufacturer, model, and technology labels use Unicode code-point scanning,
+  reject control and bidirectional format characters, and map separator- or
+  reviewed default-ignorable-only values to `Unknown`. Visible labels with
+  variation selectors remain valid. These values remain local and are not
+  logged or sent.
 - Battery level percentages are normalized against Android's reported scale and
   clamped to 0 through 100 before display. Missing or invalid level data is
   displayed as `Unknown` instead of exposing the internal `-1` sentinel.
@@ -186,6 +189,8 @@ privacy-safe evidence, and explicit unexecuted rows.
   unavailable charging-source data display contract.
 - See `docs/plans/2026-06-09-battery-status-technology-display.md` for the
   battery state and technology display contract.
+- See `docs/plans/2026-06-26-unicode-visible-battery-labels.md` for the
+  code-point-aware visible vendor-label boundary and mutation evidence.
 - See `docs/plans/2026-06-09-battery-backup-policy.md` for the Android backup
   policy contract.
 - See `docs/plans/2026-06-09-battery-intent-null-guards.md` for null-safe

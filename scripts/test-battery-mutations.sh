@@ -71,7 +71,19 @@ run_mutation current-unit 's/int\[\] divisors = \{1000,/int[] divisors = {1,/' \
   app/src/main/java/garethpaul/com/chargeme/CurrentReader.java
 run_mutation current-range 's/MAX_CURRENT_MILLIAMPS = 1000000L/MAX_CURRENT_MILLIAMPS = Long.MAX_VALUE/' \
   app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
-run_mutation label-format 's/\|\| Character\.getType\(character\) == Character\.FORMAT//' \
+run_mutation label-format 's/\|\| Character\.getType\(codePoint\) == Character\.FORMAT//' \
+  app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
+run_mutation label-space 's/[[:space:]]*\|\| Character\.isSpaceChar\(codePoint\)//' \
+  app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
+run_mutation label-mongolian-variation 's/[[:space:]]*\|\| \(codePoint >= 0x180B && codePoint <= 0x180D\)//' \
+  app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
+run_mutation label-variation 's/[[:space:]]*\|\| \(codePoint >= 0xFE00 && codePoint <= 0xFE0F\)//' \
+  app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
+run_mutation label-supplementary-variation 's/[[:space:]]*\|\| \(codePoint >= 0xE0100 && codePoint <= 0xE01EF\)//' \
+  app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
+run_mutation label-codepoint 's/normalized\.codePointAt\(index\)/normalized.charAt(index)/' \
+  app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
+run_mutation label-visible 's/return hasVisibleContent \? normalized : UNKNOWN;/return normalized;/' \
   app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
 run_mutation voltage-range 's/MAX_VOLTAGE_MILLIVOLTS = 100000/MAX_VOLTAGE_MILLIVOLTS = Integer.MAX_VALUE/' \
   app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
@@ -80,4 +92,4 @@ run_mutation temperature-range 's/MAX_TEMPERATURE_TENTHS = 2000/MAX_TEMPERATURE_
 run_mutation percentage-clamp 's/Math\.min\(100L, roundedPercent\)/Math.min(101L, roundedPercent)/' \
   app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
 
-printf '%s\n' "Battery mutations: 6 rejected"
+printf '%s\n' "Battery mutations: 12 rejected"

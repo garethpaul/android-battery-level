@@ -63,15 +63,20 @@ final class BatteryTelemetry {
             return UNKNOWN;
         }
 
-        for (int index = 0; index < normalized.length(); index++) {
-            char character = normalized.charAt(index);
-            if (Character.isISOControl(character)
-                    || Character.getType(character) == Character.FORMAT) {
+        boolean hasVisibleContent = false;
+        for (int index = 0; index < normalized.length();) {
+            int codePoint = normalized.codePointAt(index);
+            if (Character.isISOControl(codePoint)
+                    || Character.getType(codePoint) == Character.FORMAT) {
                 return UNKNOWN;
             }
+            if (!isInvisibleLabelCodePoint(codePoint)) {
+                hasVisibleContent = true;
+            }
+            index += Character.charCount(codePoint);
         }
 
-        return normalized;
+        return hasVisibleContent ? normalized : UNKNOWN;
     }
 
     static String deviceName(String manufacturerValue, String modelValue) {
@@ -104,6 +109,15 @@ final class BatteryTelemetry {
         return value != null
                 && value.trim().length() > 0
                 && UNKNOWN.equals(normalizedLabel(value));
+    }
+
+    private static boolean isInvisibleLabelCodePoint(int codePoint) {
+        return Character.isWhitespace(codePoint)
+                || Character.isSpaceChar(codePoint)
+                || codePoint == 0x034F
+                || (codePoint >= 0x180B && codePoint <= 0x180D)
+                || (codePoint >= 0xFE00 && codePoint <= 0xFE0F)
+                || (codePoint >= 0xE0100 && codePoint <= 0xE01EF);
     }
 
     private static String capitalize(String value) {
