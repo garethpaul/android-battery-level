@@ -28,6 +28,7 @@ MODEL_FALLBACK_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-model-fallback.md"
 ZERO_VOLTAGE_PLAN="$ROOT_DIR/docs/plans/2026-06-14-battery-zero-voltage-fallback.md"
 DEVICE_NAME_FALLBACK_PLAN="$ROOT_DIR/docs/plans/2026-06-15-battery-device-name-fallback.md"
 UNICODE_LABEL_PLAN="$ROOT_DIR/docs/plans/2026-06-26-unicode-visible-battery-labels.md"
+RECEIVER_HOST_PLAN="$ROOT_DIR/docs/plans/2026-06-26-battery-receiver-host-tests.md"
 LAUNCHER_EXPORT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-explicit-launcher-export.md"
 PLUGGED_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-plugged-unavailable-display.md"
 TECHNOLOGY_DISPLAY_PLAN="$ROOT_DIR/docs/plans/2026-06-13-battery-technology-normalization.md"
@@ -55,12 +56,32 @@ for required_path in \
   "$MODEL_FALLBACK_PLAN" \
   "$ZERO_VOLTAGE_PLAN" \
   "$DEVICE_NAME_FALLBACK_PLAN" \
-  "$UNICODE_LABEL_PLAN"; do
+  "$UNICODE_LABEL_PLAN" \
+  "$RECEIVER_HOST_PLAN" \
+  "$ROOT_DIR/host-tests/src/android/content/BroadcastReceiver.java" \
+  "$ROOT_DIR/host-tests/src/android/content/Context.java" \
+  "$ROOT_DIR/host-tests/src/android/content/Intent.java"; do
   if [ ! -f "$required_path" ]; then
     printf '%s\n' "Required file is missing: ${required_path#"$ROOT_DIR/"}" >&2
     exit 1
   fi
 done
+
+for receiver_host_contract in \
+  'testReceiverDeliveryBoundaries();' \
+  'receiver.onReceive(null, null);' \
+  'new mBatInfoReceiver(null).onReceive(null, batteryStatus);'; do
+  if ! grep -Fq "$receiver_host_contract" "$ROOT_DIR/host-tests/src/garethpaul/com/chargeme/BatteryHostTest.java"; then
+    printf '%s\n' "Battery receiver host test missing contract: $receiver_host_contract" >&2
+    exit 1
+  fi
+done
+
+if ! grep -Fq 'receiver-null-intent' "$MUTATION_TEST" || \
+   ! grep -Fq 'Battery mutations: 13 rejected' "$MUTATION_TEST"; then
+  printf '%s\n' "Battery receiver boundary must remain mutation-tested." >&2
+  exit 1
+fi
 
 for unicode_label_plan_contract in \
   'Status: Completed' \

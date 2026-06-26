@@ -71,8 +71,9 @@ an uncached build still needs HTTPS access to Gradle's distribution service.
 - `make check` - runs the source baseline and Android SDK-backed Gradle checks
   when `ANDROID_HOME` or `ANDROID_SDK_ROOT` is configured
 - `scripts/test-battery-host.sh` - runs dependency-free Java behavior tests for
-  telemetry bounds, current units, fallback order, parsing, and vendor labels
-- `scripts/test-battery-mutations.sh` - proves twelve critical boundary mutations
+  receiver delivery, telemetry bounds, current units, fallback order, parsing,
+  and vendor labels
+- `scripts/test-battery-mutations.sh` - proves thirteen critical boundary mutations
   are rejected
 - `scripts/check-baseline.sh` - runs SDK-free battery receiver and resource baseline checks
 - The canonical GitHub Actions workflow installs Android API 22 and build-tools
