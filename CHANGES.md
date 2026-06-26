@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-26 10:30 - P2 - Reject combining-mark-only battery labels
+
+- Combining-mark-only battery labels display as `Unknown` while decomposed accented labels remain intact.
+- Added host assertions, a hostile mutation, maintained guidance, and implementation plans for the boundary.
+
 ## 2026-06-26 02:49 - P2 - Execute receiver delivery edge cases on the host
 
 ### Summary

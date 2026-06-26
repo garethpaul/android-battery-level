@@ -81,11 +81,13 @@ run_mutation label-format 's/\|\| Character\.getType\(codePoint\) == Character\.
   app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
 run_mutation label-space 's/[[:space:]]*\|\| Character\.isSpaceChar\(codePoint\)//' \
   app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
-run_mutation label-mongolian-variation 's/[[:space:]]*\|\| \(codePoint >= 0x180B && codePoint <= 0x180D\)//' \
+run_mutation label-combining-mark 's/[[:space:]]*\|\| characterType == Character\.NON_SPACING_MARK//' \
   app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
-run_mutation label-variation 's/[[:space:]]*\|\| \(codePoint >= 0xFE00 && codePoint <= 0xFE0F\)//' \
+run_mutation label-mongolian-variation 's/[[:space:]]*\|\| characterType == Character\.NON_SPACING_MARK//; s/[[:space:]]*\|\| \(codePoint >= 0x180B && codePoint <= 0x180D\)//' \
   app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
-run_mutation label-supplementary-variation 's/[[:space:]]*\|\| \(codePoint >= 0xE0100 && codePoint <= 0xE01EF\)//' \
+run_mutation label-variation 's/[[:space:]]*\|\| characterType == Character\.NON_SPACING_MARK//; s/[[:space:]]*\|\| \(codePoint >= 0xFE00 && codePoint <= 0xFE0F\)//' \
+  app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
+run_mutation label-supplementary-variation 's/[[:space:]]*\|\| characterType == Character\.NON_SPACING_MARK//; s/[[:space:]]*\|\| \(codePoint >= 0xE0100 && codePoint <= 0xE01EF\)//' \
   app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
 run_mutation label-codepoint 's/normalized\.codePointAt\(index\)/normalized.charAt(index)/' \
   app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
@@ -100,4 +102,4 @@ run_mutation percentage-clamp 's/Math\.min\(100L, roundedPercent\)/Math.min(101L
 run_mutation receiver-null-intent 's/[[:space:]]*if \(intent == null\) \{[[:space:]]*return;[[:space:]]*\}//' \
   app/src/main/java/garethpaul/com/chargeme/mBatInfoReceiver.java
 
-printf '%s\n' "Battery mutations: 13 rejected"
+printf '%s\n' "Battery mutations: 14 rejected"

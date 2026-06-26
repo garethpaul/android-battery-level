@@ -129,6 +129,7 @@ privacy-safe evidence, and explicit unexecuted rows.
   reviewed default-ignorable-only values to `Unknown`. Visible labels with
   variation selectors remain valid. These values remain local and are not
   logged or sent.
+- Combining-mark-only battery labels display as `Unknown` while decomposed accented labels remain intact.
 - Battery level percentages are normalized against Android's reported scale and
   clamped to 0 through 100 before display. Missing or invalid level data is
   displayed as `Unknown` instead of exposing the internal `-1` sentinel.

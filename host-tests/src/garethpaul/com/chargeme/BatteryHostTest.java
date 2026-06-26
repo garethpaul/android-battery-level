@@ -46,6 +46,8 @@ public final class BatteryHostTest {
         assertEquals("Unknown", BatteryTelemetry.normalizedLabel("model\nspoof"));
         assertEquals("Unknown", BatteryTelemetry.normalizedLabel("\u00A0\u2003"));
         assertEquals("Unknown", BatteryTelemetry.normalizedLabel("\u034F"));
+        assertEquals("Unknown", BatteryTelemetry.normalizedLabel("\u0301"));
+        assertEquals("Cafe\u0301", BatteryTelemetry.normalizedLabel("Cafe\u0301"));
         assertEquals("Unknown", BatteryTelemetry.normalizedLabel("\u180B"));
         assertEquals("Unknown", BatteryTelemetry.normalizedLabel("\uFE0F"));
         assertEquals("Unknown", BatteryTelemetry.normalizedLabel("\uDB40\uDD00"));
