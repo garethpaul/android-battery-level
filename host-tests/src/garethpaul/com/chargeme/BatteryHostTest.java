@@ -54,6 +54,10 @@ public final class BatteryHostTest {
         assertEquals("Unknown", BatteryTelemetry.normalizedLabel("\uDB40\uDC01"));
         assertEquals("Li-ion\uFE0F", BatteryTelemetry.normalizedLabel("Li-ion\uFE0F"));
         assertEquals("Li-ion\uDB40\uDD00", BatteryTelemetry.normalizedLabel("Li-ion\uDB40\uDD00"));
+        String eightySupplementaryLabels = repeat("\uD83D\uDD0B", 80);
+        assertEquals(eightySupplementaryLabels,
+                BatteryTelemetry.normalizedLabel(eightySupplementaryLabels));
+        assertEquals("Unknown", BatteryTelemetry.normalizedLabel(repeat("\uD83D\uDD0B", 81)));
         assertEquals("Google Pixel", BatteryTelemetry.deviceName("google", "Pixel"));
         assertEquals("Google Pixel", BatteryTelemetry.deviceName("google", "pixel"));
         assertEquals("Google Pixel", BatteryTelemetry.deviceName("Google", "google Pixel"));
@@ -136,6 +140,14 @@ public final class BatteryHostTest {
         if (!condition) {
             throw new AssertionError("expected true");
         }
+    }
+
+    private static String repeat(String value, int count) {
+        StringBuilder result = new StringBuilder(value.length() * count);
+        for (int index = 0; index < count; index++) {
+            result.append(value);
+        }
+        return result.toString();
     }
 
     private static void assertEquals(Object expected, Object actual) {

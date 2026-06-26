@@ -130,6 +130,7 @@ privacy-safe evidence, and explicit unexecuted rows.
   variation selectors remain valid. These values remain local and are not
   logged or sent.
 - Combining-mark-only battery labels display as `Unknown` while decomposed accented labels remain intact.
+- Battery vendor-label length is capped at 80 Unicode code points, so supplementary characters count once instead of as two UTF-16 code units.
 - Battery level percentages are normalized against Android's reported scale and
   clamped to 0 through 100 before display. Missing or invalid level data is
   displayed as `Unknown` instead of exposing the internal `-1` sentinel.

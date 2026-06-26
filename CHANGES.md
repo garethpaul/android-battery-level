@@ -1,5 +1,21 @@
 # Changes
 
+## 2026-06-26 16:35 - P2 - Count vendor-label limits by Unicode code point
+
+- Battery vendor-label length is capped at 80 Unicode code points, so supplementary characters count once instead of as two UTF-16 code units.
+- Added red-first host assertions for exactly 80 and 81 supplementary-plane battery symbols.
+- Preserved trimming, visible-base requirements, control/format rejection, and the existing display fallback.
+- The focused host suite passed 49 assertions, all 15 hostile mutations were
+  rejected, and mutation-gate infrastructure regressions passed.
+- `make lint`, `make test`, `make build`, `make verify`, repository-root and
+  external-directory `make check`, shell syntax, and `git diff --check` passed.
+  SDK-backed Gradle steps were skipped because the Android SDK is not configured.
+- Hosted Android check run `28271138791` and CodeQL run `28271138020` passed on
+  implementation head `9206583f458087393371eac8f80fba7e4ba9a5e1`, including
+  Actions and Java/Kotlin analysis.
+- Codex review stopped before analysis with OpenAI HTTP 401; immutable manual
+  review found no actionable issues.
+
 ## 2026-06-26 10:30 - P2 - Reject combining-mark-only battery labels
 
 - Combining-mark-only battery labels display as `Unknown` while decomposed accented labels remain intact.

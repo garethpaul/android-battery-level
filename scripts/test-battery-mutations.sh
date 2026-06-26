@@ -91,6 +91,8 @@ run_mutation label-supplementary-variation 's/[[:space:]]*\|\| characterType == 
   app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
 run_mutation label-codepoint 's/normalized\.codePointAt\(index\)/normalized.charAt(index)/' \
   app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
+run_mutation label-codepoint-length 's/codePointCount > MAX_LABEL_LENGTH/normalized.length() > MAX_LABEL_LENGTH/' \
+  app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
 run_mutation label-visible 's/return hasVisibleContent \? normalized : UNKNOWN;/return normalized;/' \
   app/src/main/java/garethpaul/com/chargeme/BatteryTelemetry.java
 run_mutation voltage-range 's/MAX_VOLTAGE_MILLIVOLTS = 100000/MAX_VOLTAGE_MILLIVOLTS = Integer.MAX_VALUE/' \
@@ -102,4 +104,4 @@ run_mutation percentage-clamp 's/Math\.min\(100L, roundedPercent\)/Math.min(101L
 run_mutation receiver-null-intent 's/[[:space:]]*if \(intent == null\) \{[[:space:]]*return;[[:space:]]*\}//' \
   app/src/main/java/garethpaul/com/chargeme/mBatInfoReceiver.java
 
-printf '%s\n' "Battery mutations: 14 rejected"
+printf '%s\n' "Battery mutations: 15 rejected"

@@ -29,6 +29,7 @@ Priority:
 - Keep vendor labels code-point-aware and require visible content beyond
   separators and reviewed default-ignorable marks
 - Combining-mark-only battery labels display as `Unknown` while decomposed accented labels remain intact.
+- Battery vendor-label length is capped at 80 Unicode code points, so supplementary characters count once instead of as two UTF-16 code units.
 - Keep unavailable charging-source data distinct from a confirmed unplugged
   state
 - Keep sticky battery intent helper paths safe when broadcasts are unavailable
